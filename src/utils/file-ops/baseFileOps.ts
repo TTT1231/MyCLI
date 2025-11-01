@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { PackageJson } from '../types';
+import { PackageJson } from '../../types';
 
 export async function ensureDir(dir: string): Promise<void> {
    await fs.ensureDir(dir);
@@ -11,10 +11,7 @@ export async function ensureDir(dir: string): Promise<void> {
  * @param srcDir 源文件夹路径
  * @param destParentDir 目标父文件夹路径（源文件夹将被完整复制到该目录下）
  */
-export async function copyDirWithSelf(
-   srcDir: string,
-   destParentDir: string
-): Promise<void> {
+export async function copyDirWithSelf(srcDir: string, destParentDir: string): Promise<void> {
    // 确保源文件夹存在
    if (!(await pathExists(srcDir))) {
       throw new Error(`源文件夹不存在: ${srcDir}`);
@@ -46,7 +43,7 @@ export async function copyDirWithSelf(
 export async function copyDirWithRename(
    srcDir: string,
    destParentDir: string,
-   newDirName: string
+   newDirName: string,
 ): Promise<void> {
    // 确保源文件夹存在
    if (!(await pathExists(srcDir))) {
@@ -91,9 +88,7 @@ export async function copyDir(src: string, dest: string): Promise<void> {
    });
 }
 
-export async function readPackageJson(
-   dir: string
-): Promise<PackageJson | null> {
+export async function readPackageJson(dir: string): Promise<PackageJson | null> {
    const packagePath = path.join(dir, 'package.json');
    if (await pathExists(packagePath)) {
       return fs.readJson(packagePath);
@@ -101,10 +96,7 @@ export async function readPackageJson(
    return null;
 }
 
-export async function writePackageJson(
-   dir: string,
-   pkg: PackageJson
-): Promise<void> {
+export async function writePackageJson(dir: string, pkg: PackageJson): Promise<void> {
    const packagePath = path.join(dir, 'package.json');
    await fs.writeJson(packagePath, pkg, { spaces: 2 });
 }
@@ -121,10 +113,7 @@ export function toValidPackageName(name: string): string {
 }
 
 // 新增：复制单个文件到指定路径
-export async function copyFileToProject(
-   srcPath: string,
-   destPath: string
-): Promise<void> {
+export async function copyFileToProject(srcPath: string, destPath: string): Promise<void> {
    if (!(await pathExists(srcPath))) {
       throw new Error(`源文件不存在：${srcPath}`);
    }
@@ -172,10 +161,7 @@ export async function readTextFileContent(filePath: string): Promise<string> {
  * @param filePath 目标文件路径（含文件名）,包含文件拓展名
  * @param content 要写入的文本内容（字符串）
  */
-export async function writeTextFile(
-   filePath: string,
-   content: string
-): Promise<void> {
+export async function writeTextFile(filePath: string, content: string): Promise<void> {
    // 1. 获取文件所在的目录路径
    const dirPath = path.dirname(filePath);
 

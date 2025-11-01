@@ -6,6 +6,6 @@ export { initProject } from './commands/init';
 export * from './types';
 
 // 导出工具函数
-export * from './utils/file';
+export * from './utils/file-ops/baseFileOps';
 export * from './utils/download';
 export * from './utils/prompt';

@@ -1,6 +1,6 @@
-import fs from 'fs-extra';
+import { readFile, ensureFile, writeFile } from 'fs-extra';
 import path from 'path';
-
+import { pathExists } from './file-ops/baseFileOps';
 /**
  * 在指定目录的 src 下操作 main.ts 文件：
  * 1. 在头部增加指定内容
@@ -11,28 +11,26 @@ import path from 'path';
  */
 export async function appendToMainImport(
    targetDir: string,
-   contentToPrepend: string
+   contentToPrepend: string,
 ): Promise<void> {
    try {
       // 构建 main.ts 的完整路径（默认放在 src 目录下，可根据实际调整）
       const mainTsPath = path.join(targetDir, 'src', 'main.ts');
 
       // 检查文件是否存在，不存在则创建空文件
-      await fs.ensureFile(mainTsPath);
+      await ensureFile(mainTsPath);
 
       // 读取原文件内容
-      let originalContent = await fs.readFile(mainTsPath, 'utf8');
+      let originalContent = await readFile(mainTsPath, 'utf8');
 
       // 1. 在头部添加内容（注意：如果需要换行，可在 contentToPrepend 末尾加 \n）
       const newContent = `${contentToPrepend}\n${originalContent}`;
 
       // 2. 确保末尾有换行符（如果原内容末尾没有，则添加）
-      const contentWithNewLine = newContent.endsWith('\n')
-         ? newContent
-         : `${newContent}\n`;
+      const contentWithNewLine = newContent.endsWith('\n') ? newContent : `${newContent}\n`;
 
       // 写入处理后的内容
-      await fs.writeFile(mainTsPath, contentWithNewLine, 'utf8');
+      await writeFile(mainTsPath, contentWithNewLine, 'utf8');
    } catch {
       throw new Error('mian.ts中append错误');
    }
@@ -51,20 +49,20 @@ export async function appendToMainImport(
 export async function rewriteMainFile(
    targetDir: string,
    otherImports: string[],
-   other: string[]
+   other: string[],
 ): Promise<void> {
    try {
       // 构建 main.ts 的完整路径
       const mainTsPath = path.join(targetDir, 'src', 'main.ts');
 
       // 检查文件是否存在
-      const fileExists = await fs.pathExists(mainTsPath);
+      const fileExists = await pathExists(mainTsPath);
       let rawImports: string[] = [];
 
       if (fileExists) {
          // 读取原文件内容
-         const originalContent = await fs.readFile(mainTsPath, 'utf8');
-         
+         const originalContent = await readFile(mainTsPath, 'utf8');
+
          // 解析原始的 import 语句
          rawImports = parseImports(originalContent);
       }
@@ -76,16 +74,14 @@ export async function rewriteMainFile(
       const newContent = [
          ...finalImports,
          '', // 空行分隔 imports 和其他内容
-         ...other
+         ...other,
       ].join('\n');
 
       // 确保末尾有换行符
-      const contentWithNewLine = newContent.endsWith('\n')
-         ? newContent
-         : `${newContent}\n`;
+      const contentWithNewLine = newContent.endsWith('\n') ? newContent : `${newContent}\n`;
 
       // 写入新内容
-      await fs.writeFile(mainTsPath, contentWithNewLine, 'utf8');
+      await writeFile(mainTsPath, contentWithNewLine, 'utf8');
    } catch (error) {
       throw new Error(`重写 main.ts 文件错误: ${error}`);
    }
@@ -105,22 +101,19 @@ export interface MainTsConfig {
  * @param {MainTsConfig} config - 累积的配置对象
  * @returns {Promise<void>} - 异步操作的 Promise
  */
-export async function applyMainTsConfig(
-   targetDir: string,
-   config: MainTsConfig
-): Promise<void> {
+export async function applyMainTsConfig(targetDir: string, config: MainTsConfig): Promise<void> {
    try {
       // 构建 main.ts 的完整路径
       const mainTsPath = path.join(targetDir, 'src', 'main.ts');
 
       // 检查文件是否存在
-      const fileExists = await fs.pathExists(mainTsPath);
+      const fileExists = await pathExists(mainTsPath);
       let rawImports: string[] = [];
 
       if (fileExists) {
          // 读取原文件内容
-         const originalContent = await fs.readFile(mainTsPath, 'utf8');
-         
+         const originalContent = await readFile(mainTsPath, 'utf8');
+
          // 解析原始的 import 语句
          rawImports = parseImports(originalContent);
       }
@@ -133,16 +126,14 @@ export async function applyMainTsConfig(
       const newContent = [
          ...uniqueImports,
          '', // 空行分隔 imports 和其他内容
-         ...config.setupCode
+         ...config.setupCode,
       ].join('\n');
 
       // 确保末尾有换行符
-      const contentWithNewLine = newContent.endsWith('\n')
-         ? newContent
-         : `${newContent}\n`;
+      const contentWithNewLine = newContent.endsWith('\n') ? newContent : `${newContent}\n`;
 
       // 写入新内容
-      await fs.writeFile(mainTsPath, contentWithNewLine, 'utf8');
+      await writeFile(mainTsPath, contentWithNewLine, 'utf8');
    } catch (error) {
       throw new Error(`应用 main.ts 配置错误: ${error}`);
    }
