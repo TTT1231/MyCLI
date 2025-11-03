@@ -56,7 +56,7 @@ import {
 } from '../project-settings/web-vue.setting';
 import { downloadTemplate, isGitHubUrl, parseGitHubUrl } from '../utils/download';
 import { TEMPLATES, TEMPLATE_TOOLS } from '../templates-settings/index';
-import { copyFileSync, writeFileSync } from 'fs-extra';
+import { copyFileSync, copySync, writeFileSync } from 'fs-extra';
 
 export async function createProject(
    projectName?: string,
@@ -447,6 +447,10 @@ async function processWebVueTools(
             const envFilePath = path.join(targetDir, '.env');
             writeFileSync(envFilePath, `VITE_API_BASE_URL=http://your-ip:your-port\n`);
 
+            copySync(
+               path.resolve(__dirname, '../resources/web/ENVREADME.md'),
+               path.join(targetDir, 'ENVREADME.md'),
+            );
             break;
          case 'ant-design-vue':
             //配置ant-design-vue组件库
