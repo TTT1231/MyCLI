@@ -3,8 +3,8 @@
 import { cac } from 'cac';
 import chalk from 'chalk';
 import updateNotifier from 'update-notifier';
-import { createProject } from './commands/create';
-import { initProject } from './commands/init';
+import { initProject, addVscodeSettings, newProject } from './commands';
+
 import pkg from '../package.json';
 
 // 检查更新
@@ -14,34 +14,21 @@ notifier.notify();
 const cli = cac('my-cli');
 
 // 全局选项
-cli.option('--force', '强制覆盖目标目录')
-   .option('--no-git', '跳过 git 初始化')
-   .option('--no-install', '跳过依赖安装')
-   .help()
-   .version(pkg.version, '-v, -V, --version');
+cli.help().version(pkg.version, '-v, -V, --version');
 
 // create 命令
-cli.command('create [project-name]', '创建新项目')
-   .option('-t, --template <template>', '指定模板')
-   .option('--force', '强制覆盖目标目录')
-   .option('--no-git', '跳过 git 初始化')
-   .option('--no-install', '跳过依赖安装')
-   .action(async (projectName, options) => {
-      await createProject(projectName, options);
-   });
+cli.command('new [project-name]', '创建新项目').action(async projectName => {
+   await newProject(projectName);
+});
+
+// add 命名，用于添加.vscode，添加nest new编译器风格
+cli.command('add', '添加.vscode爱好设置').action(async () => {
+   await addVscodeSettings();
+});
 
 // init 命令
-cli.command('init', '在当前目录初始化项目')
-   .option('-t, --template <template>', '指定模板')
-   .option('--no-git', '跳过 git 初始化')
-   .option('--no-install', '跳过依赖安装')
-   .action(async options => {
-      await initProject(options);
-   });
-
-// 默认命令（当没有指定命令时）
-cli.command('', '创建新项目（默认命令）').action(async () => {
-   await createProject();
+cli.command('init', '在当前目录初始化项目').action(async () => {
+   await initProject();
 });
 
 // 错误处理

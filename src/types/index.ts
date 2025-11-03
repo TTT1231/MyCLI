@@ -14,10 +14,7 @@ export interface ProjectOptions {
 }
 
 export interface CreateOptions {
-   template?: string;
-   force?: boolean;
-   git?: boolean;
-   install?: boolean;
+   // 保留空接口，以备将来扩展
 }
 
 export interface CliContext {

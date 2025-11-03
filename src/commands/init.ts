@@ -1,9 +1,8 @@
 import path from 'path';
-import { CreateOptions } from '../types';
-import { createProject } from './create';
+import { newProject } from './new';
 import { showIntro, showError } from '../utils/prompt';
 
-export async function initProject(options: CreateOptions = {}): Promise<void> {
+export async function initProject(): Promise<void> {
    try {
       showIntro('在当前目录初始化项目');
 
@@ -12,10 +11,7 @@ export async function initProject(options: CreateOptions = {}): Promise<void> {
       const projectName = path.basename(currentDir);
 
       // 调用 create 命令，但使用当前目录
-      await createProject(projectName, {
-         ...options,
-         force: true, // 强制在当前目录创建
-      });
+      await newProject(projectName, true);
    } catch (error) {
       // 避免将 Symbol 转换为字符串
       if (error instanceof Error) {

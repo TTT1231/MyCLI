@@ -126,7 +126,10 @@ export async function customMultiselect(options: CustomMultiselectOptions): Prom
    const result = await prompt.prompt();
 
    if (isCancel(result)) {
-      return [];
+      // 导入 showError 函数来显示取消消息
+      const { showError } = await import('./prompt');
+      showError('操作已取消');
+      process.exit(0);
    }
 
    // 确保返回的是字符串数组

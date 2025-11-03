@@ -73,6 +73,26 @@ export async function promptOverwrite(targetDir: string): Promise<boolean> {
    return overwrite as boolean;
 }
 
+/**
+ * 询问用户是否初始化 Git 仓库（Yes/No 选择框，默认选中 Yes）
+ * @returns 用户选择结果（true = Yes，false = No）
+ */
+export async function promptInitGit(): Promise<boolean> {
+   const initGit = await confirm({
+      message: '是否初始化Git',
+      initialValue: true, // 核心配置：默认选中 Yes
+      // 注：@clack/prompts 的 confirm 组件会自动渲染为 Yes/No 选择框
+      // 按 Enter 直接确认默认的 Yes，按方向键可切换到 No
+   });
+
+   // 处理用户取消操作（和其他 prompt 保持一致逻辑）
+   if (isCancel(initGit)) {
+      showError('操作已取消');
+      process.exit(0);
+   }
+
+   return initGit as boolean;
+}
 export async function promptPackageManager(): Promise<PackageManager> {
    const packageManager = await select({
       message: '选择包管理器:',
@@ -116,12 +136,6 @@ export async function promptToolOptions(
       required: false,
       initialValues: [], // 默认全部未选择
    });
-
-   // 检查用户是否取消了操作
-   if (tools.length === 0 && options.length > 0) {
-      // 如果没有选择任何工具但有可选项，可能是用户取消了操作
-      // 这里我们允许用户不选择任何工具
-   }
 
    // 归一化：确保返回值是 options 中的 value（避免意外返回 label 导致逻辑未命中）
    const valueByLabel = new Map(options.map(o => [o.label, o.value]));
