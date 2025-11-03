@@ -1,5 +1,4 @@
 import fs from 'fs-extra';
-import path from 'path';
 import { ViteConfig } from '../../types';
 import { pathExists } from './baseFileOps';
 

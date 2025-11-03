@@ -1,9 +1,7 @@
 import path from 'path';
 import { execa } from 'execa';
-import chalk from 'chalk';
 import { CreateOptions, TemplateConfig, PackageManager, type ViteConfig } from '../types';
 import {
-   showIntro,
    showOutro,
    showError,
    showSuccess,
@@ -17,20 +15,33 @@ import {
    createProgressBar,
 } from '../utils/prompt';
 import {
+   //base file ops
    pathExists,
    emptyDir,
    ensureDir,
    toValidPackageName,
-   readPackageJson,
    writePackageJson,
    copyDir,
    copyDirWithSelf,
    copyDirWithRename,
    readTextFileContent,
    writeTextFile,
-} from '../utils/file-ops/baseFileOps';
-import { appendRecordToRecord } from '../utils/packageOpts';
-import { readViteConfig, writeViteConfig } from '../utils/file-ops/viteFileOps';
+   //git ops
+   createGitOpsInstance,
+   //main file ops
+   MainFileOps,
+   //package.json ops
+   appendRecordToRecord,
+   readPackageJson,
+   //tailwindcss file ops
+   putInTailwindCssFileGenerate,
+   //tsconfig file ops
+   TsconfigOps,
+   //vite file ops
+   readViteConfig,
+   writeViteConfig,
+} from '../utils/file-ops';
+
 import {
    getWebEslintPrettierDevDependency,
    getWebDevtoolsDevDependency,
@@ -44,15 +55,9 @@ import {
    getWebAutoComponentsDependency,
 } from '../project-settings/web-vue.setting';
 import { downloadTemplate, isGitHubUrl, parseGitHubUrl } from '../utils/download';
-import { putInTailwindCssFileGenerate } from '../utils/file-ops/tailwindcssOps';
-import { TEMPLATES, TEMPLATE_TOOLS } from '../templates/index';
-
-// import { applyMainTsConfig, type MainTsConfig } from '../utils/mainFileOps';
-
-import { MainFileOps } from '../utils/file-ops/mainFileOps';
+import { TEMPLATES, TEMPLATE_TOOLS } from '../templates-settings/index';
 import { copyFileSync, writeFileSync } from 'fs-extra';
-import { TsconfigOps } from '../utils/tsconfigOps';
-import { createGitOpsInstance } from '../utils/file-ops/gitOps';
+
 export async function createProject(
    projectName?: string,
    options: CreateOptions = {},
@@ -86,9 +91,6 @@ export async function createProject(
       } else {
          await ensureDir(targetDir);
       }
-
-      //5.多选按钮eslint,prettier,git,devtools
-      //TODO 当选着不同的多选按钮是针对不同模板，和不同工具进行处理
 
       // 5. 下载模板
       console.log('\n正在下载模板...');
@@ -288,11 +290,11 @@ async function processWebVueTools(
    const gitIgnoreOps = await createGitOpsInstance(targetDir);
    const maintsOps = new MainFileOps(path.join(targetDir, 'src', 'main.ts'));
 
-   await tsConfigOps.load();
+   await tsConfigOps.init();
    await maintsOps.init();
 
    if (!packageJson) throw new Error('package.json 文件不存在');
-   if (!tsConfigOps.exists()) throw new Error('tsconfig.app.json 文件不存在');
+
    packageJson.name = projectName;
    let dependencies: Record<string, string> = packageJson.dependencies || {};
    let devDependencies: Record<string, string> = packageJson.devDependencies || {};
@@ -324,7 +326,13 @@ async function processWebVueTools(
          case 'eslint-prettier':
             //配置 ESLint 和 Prettierfor Vue
             appendRecordToRecord(getWebEslintPrettierDevDependency(), devDependencies);
-
+            const newScripts: Record<string, string> = {
+               lint: 'eslint --ext .ts .',
+               format: 'prettier --write .',
+               'lint:fix': 'eslint "src/**/*.{js,ts}" --fix',
+               'code:fix': 'pnpm run lint:fix && pnpm run format',
+            };
+            appendRecordToRecord(newScripts, scripts);
             //将resources/web/code-format复制到targetDir中
             const sourceCodeFormatDir = path.resolve(__dirname, '../resources/web/code-format');
             await copyDir(sourceCodeFormatDir, targetDir);

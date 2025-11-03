@@ -1,12 +1,21 @@
 import fs from 'fs-extra';
-import path from 'path';
+import type { CompilerOptions, Tsconfig } from './types';
 
 /**
  * TypeScript 配置文件操作工具类
+ * @usage  @example
+ * const tsconfigOps = new TsconfigOps(filePath); //包含文件名和拓展名
+ * await tsconfigOps.init() //初始化,完成文件读取
+ * //addPaths
+ * tsConfigOps.addPaths('@/*', ['src/*']).setBaseUrl('.');
+ * //appendTypes
+ * tsConfigOps.appendTypes(['ant-design-vue/typings/global.d.ts']);
+ * //end save
+ * await tsConfigOps.save();
  */
 export class TsconfigOps {
    private filePath: string;
-   private config: any;
+   private config: Tsconfig | null;
 
    constructor(filePath: string) {
       this.filePath = filePath;
@@ -24,11 +33,11 @@ export class TsconfigOps {
       let inSingleComment = false;
       let inMultiComment = false;
       let stringChar = '';
-      
+
       for (let i = 0; i < jsonString.length; i++) {
          const char = jsonString[i];
          const nextChar = jsonString[i + 1];
-         
+
          // 处理字符串状态
          if (!inSingleComment && !inMultiComment) {
             if ((char === '"' || char === "'") && (i === 0 || jsonString[i - 1] !== '\\')) {
@@ -41,13 +50,13 @@ export class TsconfigOps {
                }
             }
          }
-         
+
          // 如果在字符串中，直接添加字符
          if (inString) {
             result += char;
             continue;
          }
-         
+
          // 处理注释
          if (!inSingleComment && !inMultiComment) {
             if (char === '/' && nextChar === '/') {
@@ -60,30 +69,30 @@ export class TsconfigOps {
                continue;
             }
          }
-         
+
          // 结束单行注释
          if (inSingleComment && char === '\n') {
             inSingleComment = false;
             result += char; // 保留换行符
             continue;
          }
-         
+
          // 结束多行注释
          if (inMultiComment && char === '*' && nextChar === '/') {
             inMultiComment = false;
             i++; // 跳过下一个字符
             continue;
          }
-         
+
          // 如果不在注释中，添加字符
          if (!inSingleComment && !inMultiComment) {
             result += char;
          }
       }
-      
+
       // 去除行尾的逗号（在最后一个属性后）
       result = result.replace(/,(\s*[}\]])/g, '$1');
-      
+
       return result;
    }
 
@@ -91,7 +100,7 @@ export class TsconfigOps {
     * 读取并解析 tsconfig.json 文件
     * @returns Promise<void>
     */
-   async load(): Promise<void> {
+   async init(): Promise<void> {
       try {
          if (!(await fs.pathExists(this.filePath))) {
             throw new Error(`文件不存在: ${this.filePath}`);
@@ -99,9 +108,11 @@ export class TsconfigOps {
 
          const content = await fs.readFile(this.filePath, 'utf-8');
          const cleanContent = this.removeJsonComments(content);
-         this.config = JSON.parse(cleanContent);
+         this.config = JSON.parse(cleanContent) as Tsconfig;
       } catch (error) {
-         throw new Error(`读取 tsconfig.json 失败: ${error instanceof Error ? error.message : String(error)}`);
+         throw new Error(
+            `读取 tsconfig.json 失败: ${error instanceof Error ? error.message : String(error)}`,
+         );
       }
    }
 
@@ -112,13 +123,15 @@ export class TsconfigOps {
    async save(): Promise<void> {
       try {
          if (!this.config) {
-            throw new Error('配置未加载，请先调用 load() 方法');
+            throw new Error('配置未加载，请先调用 init() 方法');
          }
 
          const content = JSON.stringify(this.config, null, 3);
          await fs.writeFile(this.filePath, content, 'utf-8');
       } catch (error) {
-         throw new Error(`保存 tsconfig.json 失败: ${error instanceof Error ? error.message : String(error)}`);
+         throw new Error(
+            `保存 tsconfig.json 失败: ${error instanceof Error ? error.message : String(error)}`,
+         );
       }
    }
 
@@ -129,7 +142,7 @@ export class TsconfigOps {
     */
    appendTypes(types: string[]): TsconfigOps {
       if (!this.config) {
-         throw new Error('配置未加载，请先调用 load() 方法');
+         throw new Error('配置未加载，请先调用 init() 方法');
       }
 
       // 确保 compilerOptions 存在
@@ -157,9 +170,9 @@ export class TsconfigOps {
     * @param options 要追加的编译选项对象
     * @returns TsconfigOps 实例，支持链式调用
     */
-   appendCompilerOptions(options: Record<string, any>): TsconfigOps {
+   appendCompilerOptions(options: Partial<CompilerOptions>): TsconfigOps {
       if (!this.config) {
-         throw new Error('配置未加载，请先调用 load() 方法');
+         throw new Error('配置未加载，请先调用 init() 方法');
       }
 
       // 确保 compilerOptions 存在
@@ -193,7 +206,7 @@ export class TsconfigOps {
     */
    setPaths(paths: Record<string, string[]>): TsconfigOps {
       if (!this.config) {
-         throw new Error('配置未加载，请先调用 load() 方法');
+         throw new Error('配置未加载，请先调用 init() 方法');
       }
 
       // 确保 compilerOptions 存在
@@ -224,7 +237,7 @@ export class TsconfigOps {
     */
    addPaths(alias: string, paths: string[]): TsconfigOps {
       if (!this.config) {
-         throw new Error('配置未加载，请先调用 load() 方法');
+         throw new Error('配置未加载，请先调用 init() 方法');
       }
 
       // 确保 compilerOptions 存在
@@ -249,7 +262,7 @@ export class TsconfigOps {
     * 获取当前配置
     * @returns 当前配置对象
     */
-   getConfig(): any {
+   getConfig(): Tsconfig | null {
       return this.config;
    }
 
@@ -279,10 +292,10 @@ export function createTsconfigOps(filePath: string): TsconfigOps {
  */
 export async function operateTsconfig(
    filePath: string,
-   operations: (ops: TsconfigOps) => TsconfigOps | Promise<TsconfigOps>
+   operations: (ops: TsconfigOps) => TsconfigOps | Promise<TsconfigOps>,
 ): Promise<void> {
    const ops = new TsconfigOps(filePath);
-   await ops.load();
+   await ops.init();
    await operations(ops);
    await ops.save();
 }

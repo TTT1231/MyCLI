@@ -2,7 +2,7 @@ import downloadGitRepo from 'download-git-repo';
 import { promisify } from 'util';
 import path from 'path';
 import { TemplateConfig } from '../types';
-import { ensureDir, pathExists, emptyDir, copyDir } from './file-ops/baseFileOps';
+import { ensureDir, pathExists, copyDir } from './file-ops/baseFileOps';
 
 const download = promisify(downloadGitRepo) as (
    repository: string,

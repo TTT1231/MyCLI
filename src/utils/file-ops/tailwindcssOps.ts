@@ -17,6 +17,8 @@ export async function putInTailwindCssFileGenerate(putInPath: string): Promise<v
       const fileContent = '@import "tailwindcss";';
       await writeFile(putInPath, fileContent, 'utf8');
    } catch (error) {
-      throw new Error(`创建 tailwind.css 文件失败: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+         `创建 tailwind.css 文件失败: ${error instanceof Error ? error.message : String(error)}`,
+      );
    }
 }
