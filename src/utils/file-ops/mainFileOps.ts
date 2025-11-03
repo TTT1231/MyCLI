@@ -53,7 +53,7 @@ export class MainFileOps {
 
    //add setup code
    public addSetupCodes(setUpCodes: string[]): MainFileOps {
-      setUpCodes.forEach(value => {
+      setUpCodes.forEach((value, index) => {
          this.mainFileContent.setupCode.push(value);
          // 只在注释行后添加空行，且不是最后一行
          if (isCommentStart(value) && index < setUpCodes.length - 1) {
