@@ -1,0 +1,23 @@
+{
+   "extends": "./tsconfig.base.json",
+   "compilerOptions": {
+      "types": ["node", "electron", "@electron-forge/plugin-vite/forge-vite-env"],
+      "paths": {
+         "@main/*": ["src/main/*"],
+         "@shared/*": ["src/shared/*"],
+         "@resources/*": ["resources/*"]
+      }
+   },
+   "include": [
+      "src/main/**/*.ts",
+      "src/main/**/*.d.ts",
+      "src/shared/**/*.ts",
+      "src/shared/**/*.d.ts",
+      "forge.config.ts",
+      "forge.env.d.ts",
+      "vite.main.config.ts",
+      "vite.preload.config.ts",
+      "vite.common.config.ts"
+   ],
+   "exclude": ["src/renderer/**"]
+}

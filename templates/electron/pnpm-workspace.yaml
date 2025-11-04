@@ -1,0 +1,5 @@
+onlyBuiltDependencies:
+  - electron
+  - electron-winstaller
+  - esbuild # vite中使用，但是在Vite8中将全面使用rolldown，然后就不会有在开发中使用esbuild的问题
+  - unrs-resolver

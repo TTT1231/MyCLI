@@ -1,0 +1,13 @@
+{
+   "$schema": "https://www.schemastore.org/tsconfig",
+   "files": [],
+   "compilerOptions": {
+      "forceConsistentCasingInFileNames": true,
+      "strict": true
+   },
+   "references": [
+      { "path": "./tsconfig.app.json" }, // 关联渲染进程配置
+      { "path": "./tsconfig.node.json" }, // 关联主进程配置
+      { "path": "./tsconfig.preload.json" } // 关联预加载脚本配置
+   ]
+}
