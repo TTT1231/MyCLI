@@ -40,8 +40,12 @@ export async function newProject(projectName?: string, isInit: boolean = false):
 
       // 3. 选择工具配置
       const templateTools = TEMPLATE_TOOLS[template] || [];
-      const selectedTools = await promptToolOptions(templateTools);
-      console.log(`\n已选择工具: ${selectedTools.length > 0 ? selectedTools.join(', ') : '无'}`);
+      let selectedTools: string[] = [];
+      if (templateTools.length > 0) {
+         // 存在可选工具时才进行交互
+         selectedTools = await promptToolOptions(templateTools);
+         console.log(`\n已选择工具: ${selectedTools.length > 0 ? selectedTools.join(', ') : '无'}`);
+      }
 
       // 4. 检查目录是否存在（在用户完成所有选择后）
       if (await pathExists(targetDir)) {
@@ -55,6 +59,13 @@ export async function newProject(projectName?: string, isInit: boolean = false):
          await emptyDir(targetDir);
       } else {
          await ensureDir(targetDir);
+      }
+
+      // 4.5 如用户选择初始化 Git，则在目录为空时立即初始化，加快执行速度
+      if (isNeedGitInit) {
+         await initGitRepo(targetDir);
+         // 避免后续重复执行
+         isNeedGitInit = false;
       }
 
       // 5. 下载模板
@@ -116,12 +127,7 @@ export async function newProject(projectName?: string, isInit: boolean = false):
          await installDependencies(targetDir, packageManager);
       }
 
-      // 8. 初始化 Git 仓库
-      if (isNeedGitInit) {
-         await initGitRepo(targetDir);
-      }
-
-      // 9. 显示项目创建成功信息和后续操作
+      // 8. 显示项目创建成功信息和后续操作
       if (shouldInstall) {
          showOutro(`项目 ${name} 创建成功！`);
          // 如果安装了依赖，自动执行 dev 命令
@@ -139,12 +145,23 @@ export async function newProject(projectName?: string, isInit: boolean = false):
             console.log('\n');
             showError('启动开发服务器失败');
          }
+
+         // Git 已在下载模板前初始化，故此处无需再次执行
+         if (isNeedGitInit) {
+            await initGitRepo(targetDir);
+         }
       } else {
-         // 如果没有安装依赖，显示成功消息和手动步骤
+         // 如果没有安装依赖，先显示成功消息和手动步骤
          showOutro(`项目 ${name} 创建成功！`);
          console.log(`cd ${name}`);
          console.log(`${packageManager} i`);
          console.log(`${packageManager} dev`);
+
+         // Git 已在下载模板前初始化，无需再次执行
+         if (isNeedGitInit) {
+            await initGitRepo(targetDir);
+            // Git 仓库已在之前初始化，无需再次执行
+         }
       }
    } catch (error) {
       // 避免将 Symbol 转换为字符串
@@ -200,17 +217,18 @@ async function processSelectedTools(
    targetDir: string,
    projectName: string,
 ): Promise<void> {
-   console.log(`\n正在为 ${template} 模板配置工具进行配置...`);
-
    // 根据不同模板进行不同的处理
    switch (template) {
       case 'web-vue':
+         console.log(`\n正在为 ${template} 模板配置工具进行配置...`);
          await WebVueToolsSettings(selectedTools, targetDir, projectName);
          break;
       case 'electron-vue':
+         // console.log(`\n正在为 ${template} 模板配置工具进行配置...`);
          await ElectronToolsSettings(selectedTools, targetDir);
          break;
       case 'node':
+         console.log(`\n正在为 ${template} 模板配置工具进行配置...`);
          await NodeToolsSettings(selectedTools, targetDir);
          break;
       default:

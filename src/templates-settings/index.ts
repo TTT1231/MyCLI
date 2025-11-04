@@ -8,7 +8,8 @@ export const TEMPLATES: Record<string, TemplateConfig> = {
    },
    'electron-vue': {
       name: 'electron-vue',
-      repository: 'github:TTT1231/electron-init',
+      repository: 'templates/electron',
+      isLocal: true,
    },
    node: {
       name: 'Node.js',
@@ -30,12 +31,7 @@ export const TEMPLATE_TOOLS: Record<string, Array<{ value: string; label: string
       { value: 'ant-design-vue', label: 'Ant Design Vue - 组件库' },
    ],
    'electron-vue': [
-      { value: 'eslint', label: 'ESLint - 代码检查工具' },
-      { value: 'prettier', label: 'Prettier - 代码格式化工具' },
-      { value: 'tailwindcss', label: 'TailwindCSS - CSS框架' },
-      { value: 'electron-builder', label: 'Electron Builder - 打包工具' },
-      { value: 'auto-updater', label: 'Auto Updater - 自动更新' },
-      { value: 'devtools', label: 'DevTools - 开发工具配置' },
+      //TODO 占位，还未配置
    ],
    node: [
       { value: 'eslint', label: 'ESLint - 代码检查工具' },
