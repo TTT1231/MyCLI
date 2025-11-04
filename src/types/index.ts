@@ -24,7 +24,7 @@ export interface CliContext {
 }
 
 export type PackageManager = 'npm' | 'yarn' | 'pnpm';
-
+export type VscodeAddType = 'web' | 'electron' | 'nest';
 export interface PackageJson {
    name: string;
    version: string;

@@ -1,0 +1,38 @@
+{
+  "recommendations": [
+    // vue 支持
+    "Vue.volar",
+    //eslint 支持
+    "dbaeumer.vscode-eslint",
+    // prettier 支持
+    "esbenp.prettier-vscode",
+    //tailwindcss 提示
+    "bradlc.vscode-tailwindcss",
+    //scss 提示
+    "mrmlnc.vscode-scss",
+    //env 提示
+    "mikestead.dotenv",
+    //vscode-icons
+    "vscode-icons-team.vscode-icons",
+    //search node_modules
+    "jasonnutter.search-node-modules",
+    // Prisma support
+    "prisma.prisma",
+    //prettier ts error
+    "yoavbls.pretty-ts-errors",
+    //editorconfig
+    "editorconfig.editorconfig",
+    //color highlight
+    "naumovs.color-highlight",
+    //注释高亮
+    "aaron-bond.better-comments",
+    //自动闭合标签
+    "formulahendry.auto-close-tag",
+    //汉化
+    "ms-ceintl.vscode-language-pack-zh-hans",
+    // Git 相关插件
+    "mhutchie.git-graph",
+    // 自动重命名标签
+    "formulahendry.auto-rename-tag",
+  ],
+}

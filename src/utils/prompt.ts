@@ -1,7 +1,7 @@
 import { intro, outro, text, select, confirm, spinner, isCancel } from '@clack/prompts';
 import chalk from 'chalk';
 import cliProgress from 'cli-progress';
-import { PackageManager } from '../types';
+import { PackageManager, type VscodeAddType } from '../types';
 import { customMultiselect } from './customMultiselect';
 
 export function showIntro(message: string): void {
@@ -110,6 +110,24 @@ export async function promptPackageManager(): Promise<PackageManager> {
    }
 
    return packageManager as PackageManager;
+}
+
+//添加vscode编译器爱好设置提示
+export async function promoptAddVscodeSettings(): Promise<VscodeAddType> {
+   const vscodeAddType = await select({
+      message: '选择vscode爱好设置',
+      options: [
+         { value: 'web', label: 'web' },
+         { value: 'electron', label: 'electron' },
+         { value: 'nest', label: 'nest' },
+      ],
+   });
+
+   if (isCancel(vscodeAddType)) {
+      showError('操作已取消');
+      process.exit(0);
+   }
+   return vscodeAddType as VscodeAddType;
 }
 
 export async function promptInstallDeps(): Promise<boolean> {

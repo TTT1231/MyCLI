@@ -57,12 +57,6 @@
       "tailwind.config.js": "postcss.config.js",
       "vite.config.{js,ts}": "vite.*.{js,ts}",
       ".env": ".env.*",
-      //nest folder
-      "*.controller.ts": "$(capture).controller.spec.ts",
-
-      //electron folder
-      "vite.renderer.config.ts": "vite.*.config.ts",
-      "forge.config.ts": "forge.env.d.ts"
    },
    // =============================== 插件配置 ================================
    "better-comments.tags": [
@@ -113,20 +107,5 @@
       }
    ],
    "better-comments.multilineComments": true,
-   "vsicons.associations.folders": [
-      {
-         "icon": "src",
-         "extensions": ["renderer"],
-         "format": "svg"
-      }
-   ],
-   "vsicons.associations.files": [
-      {
-         "icon": "tsconfig",
-         "extensions": ["tsconfig.preload.json"],
-         "filename": true,
-         "format": "svg"
-      }
-   ],
    "workbench.iconTheme": "vscode-icons"
 }

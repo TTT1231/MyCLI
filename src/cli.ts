@@ -21,8 +21,8 @@ cli.command('new [project-name]', '创建新项目').action(async projectName =>
    await newProject(projectName);
 });
 
-// add 命名，用于添加.vscode，添加nest new编译器风格
-cli.command('add', '添加.vscode爱好设置').action(async () => {
+// vscode 命名，用于添加.vscode，添加nest new编译器风格
+cli.command('vscode', '添加.vscode爱好设置').action(async () => {
    await addVscodeSettings();
 });
 
