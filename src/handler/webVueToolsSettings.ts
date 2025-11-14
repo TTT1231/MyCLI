@@ -59,7 +59,6 @@ export async function WebVueToolsSettings(
 
    if (!packageJson) throw new Error('package.json 文件不存在');
 
-   packageJson.name = projectName;
    let dependencies: Record<string, string> = packageJson.dependencies || {};
    let devDependencies: Record<string, string> = packageJson.devDependencies || {};
    let scripts: Record<string, string> = packageJson.scripts || {};

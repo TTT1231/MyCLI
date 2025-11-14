@@ -11,6 +11,8 @@ import {
    emptyDir,
    ensureDir,
    toValidPackageName,
+   updateHtmlTitle,
+   updatePackageName,
 } from '../utils/file-ops';
 import {
    showOutro,
@@ -114,9 +116,14 @@ export async function newProject(projectName?: string, isInit: boolean = false):
          console.log(''); // 添加空行
          throw error;
       }
+      const validName = toValidPackageName(name);
+
+      //5.5 更新 index.html 的 title
+      await updateHtmlTitle(path.join(targetDir, 'index.html'), validName);
+      await updatePackageName(path.join(targetDir, 'package.json'), validName);
 
       // 6. 根据模板和选择的工具进行处理
-      await processSelectedTools(template, selectedTools, targetDir, toValidPackageName(name));
+      await processSelectedTools(template, selectedTools, targetDir, validName);
 
       // 7. 安装依赖
       let shouldInstall = false;

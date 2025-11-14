@@ -7,3 +7,4 @@ export * from './packageOpts';
 export * from './tailwindcssOps';
 export * from './tsconfigOps';
 export * from './viteFileOps';
+export * from './htmlOps';

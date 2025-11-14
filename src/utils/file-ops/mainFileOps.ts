@@ -1,12 +1,5 @@
 import { ensureFile, readFile, writeFile } from 'fs-extra';
-
-/**
- * 多工具配置的 main.ts 配置收集器
- */
-export interface MainTsConfig {
-   imports: string[];
-   setupCode: string[];
-}
+import type { MainTsConfig } from './types';
 
 /**
  * 操作main.ts文件工具类
