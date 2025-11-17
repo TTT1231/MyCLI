@@ -1,6 +1,5 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { PackageJson } from '../../types';
 
 export async function ensureDir(dir: string): Promise<void> {
    await fs.ensureDir(dir);
@@ -88,30 +87,6 @@ export async function copyDir(src: string, dest: string): Promise<void> {
    });
 }
 
-export async function readPackageJson(dir: string): Promise<PackageJson | null> {
-   const packagePath = path.join(dir, 'package.json');
-   if (await pathExists(packagePath)) {
-      return fs.readJson(packagePath);
-   }
-   return null;
-}
-
-export async function writePackageJson(dir: string, pkg: PackageJson): Promise<void> {
-   const packagePath = path.join(dir, 'package.json');
-   await fs.writeJson(packagePath, pkg, { spaces: 2 });
-}
-
-export function isValidPackageName(name: string): boolean {
-   return /^[a-z0-9-_]+$/.test(name);
-}
-
-export function toValidPackageName(name: string): string {
-   return name
-      .toLowerCase()
-      .replace(/[^a-z0-9-_]/g, '-')
-      .replace(/^-+|-+$/g, '');
-}
-
 // 新增：复制单个文件到指定路径
 export async function copyFileToProject(srcPath: string, destPath: string): Promise<void> {
    if (!(await pathExists(srcPath))) {
@@ -170,4 +145,28 @@ export async function writeTextFile(filePath: string, content: string): Promise<
 
    // 3. 写入内容（文件不存在则自动创建，存在则覆盖）
    await fs.writeFile(filePath, content, 'utf8');
+}
+
+/**
+ * 将源对象（source）的所有键值对，浅拷贝并合并到目标对象（target）中，最终修改目标对象本身（无返回值）。
+ */
+
+export function appendRecordToRecord(
+   source: Record<string, string>,
+   target: Record<string, string>,
+): void {
+   for (const [key, value] of Object.entries(source)) {
+      target[key] = value;
+   }
+}
+
+export function isValidPackageName(name: string): boolean {
+   return /^[a-z0-9-_]+$/.test(name);
+}
+
+export function toValidPackageName(name: string): string {
+   return name
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]/g, '-')
+      .replace(/^-+|-+$/g, '');
 }

@@ -11,8 +11,6 @@ import {
    emptyDir,
    ensureDir,
    toValidPackageName,
-   updateHtmlTitle,
-   updatePackageName,
 } from '../utils/file-ops';
 import {
    showOutro,
@@ -118,10 +116,6 @@ export async function newProject(projectName?: string, isInit: boolean = false):
       }
       const validName = toValidPackageName(name);
 
-      //5.5 更新 index.html 的 title
-      await updateHtmlTitle(path.join(targetDir, 'index.html'), validName);
-      await updatePackageName(path.join(targetDir, 'package.json'), validName);
-
       // 6. 根据模板和选择的工具进行处理
       await processSelectedTools(template, selectedTools, targetDir, validName);
 
@@ -183,6 +177,7 @@ export async function newProject(projectName?: string, isInit: boolean = false):
    }
 }
 
+//执行 pnpm i
 async function installDependencies(
    targetDir: string,
    packageManager: PackageManager,
@@ -202,6 +197,7 @@ async function installDependencies(
    }
 }
 
+//执行 git init
 async function initGitRepo(targetDir: string): Promise<void> {
    try {
       await execa('git', ['init'], { cwd: targetDir, stdio: 'pipe' });
@@ -228,7 +224,7 @@ async function processSelectedTools(
    switch (template) {
       case 'web-vue':
          console.log(`\n正在为 ${template} 模板配置工具进行配置...`);
-         await WebVueToolsSettings(selectedTools, targetDir, projectName);
+         await WebVueToolsSettings(selectedTools, targetDir, toValidPackageName(projectName));
          break;
       case 'electron-vue':
          // console.log(`\n正在为 ${template} 模板配置工具进行配置...`);

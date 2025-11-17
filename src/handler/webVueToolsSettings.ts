@@ -2,7 +2,6 @@ import path from 'path';
 
 import {
    //base file ops
-   writePackageJson,
    copyDir,
    copyDirWithSelf,
    copyDirWithRename,
@@ -13,15 +12,14 @@ import {
    //main file ops
    MainFileOps,
    //package.json ops
-   appendRecordToRecord,
-   readPackageJson,
+   PackageJsonOps,
    //tailwindcss file ops
    putInTailwindCssFileGenerate,
    //tsconfig file ops
    TsconfigOps,
    //vite file ops
-   readViteConfig,
-   writeViteConfig,
+   ViteConfigOps,
+   updateHtmlTitle,
 } from '../utils/file-ops';
 import {
    getWebEslintPrettierDevDependency,
@@ -49,69 +47,56 @@ export async function WebVueToolsSettings(
    targetDir: string,
    projectName: string,
 ): Promise<void> {
-   const packageJson = await readPackageJson(targetDir);
+   //读取并初始化package.json,tsconfig.json,.gitignore,main.ts,vite.config.ts
+   const packageJsonOps = new PackageJsonOps(path.resolve(targetDir, 'package.json'));
    const tsConfigOps = new TsconfigOps(path.resolve(targetDir, 'tsconfig.app.json'));
-   const gitIgnoreOps = await createGitOpsInstance(targetDir);
    const maintsOps = new MainFileOps(path.join(targetDir, 'src', 'main.ts'));
+   const viteConfigOps = new ViteConfigOps(path.join(targetDir, 'vite.config.ts'));
 
+   const gitIgnoreOps = await createGitOpsInstance(targetDir);
    await tsConfigOps.init();
    await maintsOps.init();
+   await packageJsonOps.init();
+   await viteConfigOps.init();
 
-   if (!packageJson) throw new Error('package.json 文件不存在');
+   // index.html 的 title
+   await updateHtmlTitle(path.join(targetDir, 'index.html'), projectName);
+   packageJsonOps.setField({ name: projectName });
 
-   let dependencies: Record<string, string> = packageJson.dependencies || {};
-   let devDependencies: Record<string, string> = packageJson.devDependencies || {};
-   let scripts: Record<string, string> = packageJson.scripts || {};
-   let viteConfig: ViteConfig | null = await readViteConfig(path.join(targetDir, 'vite.config.ts'));
+   // 配置路径别名
+   viteConfigOps
+      .addImport("import path from 'path';")
+      .addAlias({ '@': "path.resolve(__dirname, './src')" });
 
-   viteConfig?.imports?.push("import path from 'path';");
-   if (!viteConfig) {
-      throw new Error('vite.config.ts 文件不存在');
-   }
-   // 配置路径别名名，以字符串形式保留语法
-
-   if (!viteConfig.resolve) {
-      viteConfig.resolve = {};
-   }
-   if (!viteConfig.resolve.alias) {
-      viteConfig.resolve.alias = {};
-   }
-   appendRecordToRecord(
-      {
-         "\'@\'": "__RAW__path.resolve(__dirname, './src')",
-      },
-      viteConfig.resolve.alias,
-   );
    tsConfigOps.addPaths('@/*', ['src/*']).setBaseUrl('.');
 
    for (const tool of selectedTools) {
       switch (tool) {
          case 'eslint-prettier':
             //配置 ESLint 和 Prettierfor Vue
-            appendRecordToRecord(getWebEslintPrettierDevDependency(), devDependencies);
+            packageJsonOps.addDevDependency(getWebEslintPrettierDevDependency());
             const newScripts: Record<string, string> = {
                lint: 'eslint --ext .ts .',
                format: 'prettier --write .',
                'lint:fix': 'eslint "src/**/*.{js,ts}" --fix',
                'code:fix': 'pnpm run lint:fix && pnpm run format',
             };
-            appendRecordToRecord(newScripts, scripts);
+            packageJsonOps.addScript(newScripts);
             //将resources/web/code-format复制到targetDir中
             const sourceCodeFormatDir = path.resolve(__dirname, '../resources/web/code-format');
             await copyDir(sourceCodeFormatDir, targetDir);
             break;
          case 'devtools':
             //配置devtools for Vue
-            appendRecordToRecord(getWebDevtoolsDevDependency(), devDependencies);
-
-            viteConfig.imports?.push('import vueDevTools from "vite-plugin-vue-devtools";');
-            viteConfig.plugins?.push('vueDevTools()');
-
+            packageJsonOps.addDevDependency(getWebDevtoolsDevDependency());
+            viteConfigOps
+               .addImport('import vueDevTools from "vite-plugin-vue-devtools";')
+               .addPlugin('vueDevTools()');
             break;
          case 'tailwindcss':
             // 配置 TailwindCSS for Vue
-            appendRecordToRecord(getWebTailwindcssDevDependency(), devDependencies);
-            appendRecordToRecord(getWebTailwindcssDependency(), dependencies);
+            packageJsonOps.addDevDependency(getWebTailwindcssDevDependency());
+            packageJsonOps.addDependency(getWebTailwindcssDependency());
             //在targetDir/src/assets创建一个tailwind.css文件，然后内容如下
             //@import "tailwindcss";
             //这里还要操作vite.config.ts
@@ -119,15 +104,15 @@ export async function WebVueToolsSettings(
             await putInTailwindCssFileGenerate(
                path.join(targetDir, 'src', 'assets', 'tailwind.css'),
             );
-            viteConfig.imports?.push('import tailwindcss from "@tailwindcss/vite";');
-            viteConfig.plugins?.push('tailwindcss()');
+            viteConfigOps
+               .addImport('import tailwindcss from "@tailwindcss/vite";')
+               .addPlugin('tailwindcss()');
             // 添加到 main.ts 配置中
             maintsOps.addImports(["import './assets/tailwind.css';"]);
-
             break;
          case 'axios':
             //将 axios 添加到 dependencies
-            appendRecordToRecord(getWebAxiosDependency(), dependencies);
+            packageJsonOps.addDependency(getWebAxiosDependency());
             //复制文件夹
             const axiosRawPath = path.resolve(__dirname, '../resources/web/request-client');
             await copyDirWithSelf(axiosRawPath, path.join(targetDir, 'src'));
@@ -135,7 +120,7 @@ export async function WebVueToolsSettings(
             break;
          case 'pinia':
             // 配置 Pinia for Vue
-            appendRecordToRecord(getWebPiniaDependency(), dependencies);
+            packageJsonOps.addDependency(getWebPiniaDependency());
             //复制文件夹
             const piniaStoreRawPath = path.resolve(__dirname, '../resources/web/store');
             await copyDirWithRename(piniaStoreRawPath, path.join(targetDir, 'src'), 'store');
@@ -146,8 +131,9 @@ export async function WebVueToolsSettings(
             break;
          case 'vue-router':
             //配置 Vue Router
-            appendRecordToRecord(getWebVueRouterDependency(), dependencies);
-            appendRecordToRecord(getWebNProgressDependency(), dependencies);
+            packageJsonOps.addDependency(getWebVueRouterDependency());
+            packageJsonOps.addDependency(getWebNProgressDependency());
+
             const routerStorgeRawPath = path.resolve(__dirname, '../resources/web/vue-router');
             copyDirWithRename(routerStorgeRawPath, path.join(targetDir, 'src'), 'router');
 
@@ -156,12 +142,8 @@ export async function WebVueToolsSettings(
                'import { router } from "@/router";',
                'import { setupRouterGuard } from "./router/guard";',
             ]);
-            maintsOps.addSetupCodes([
-               '// 配置路由',
-               'app.use(router);',
-               '// 配置路由守卫',
-               'setupRouterGuard(router);',
-            ]);
+            maintsOps.addSetupCodes(['// 配置路由', 'app.use(router);']);
+            maintsOps.addSetupCodes(['// 配置路由守卫', 'setupRouterGuard(router);']);
             //src/views/index.vue
             const appContent = await readTextFileContent(path.join(targetDir, 'src/App.vue'));
             // 修复路径引用，使用 @ 别名
@@ -185,21 +167,12 @@ export async function WebVueToolsSettings(
 
             break;
          case 'vite-proxy':
-            // 确保 server 对象存在
-            if (!viteConfig.server) {
-               viteConfig.server = {};
-            }
-            // 确保 proxy 对象存在
-            if (!viteConfig.server.proxy) {
-               viteConfig.server.proxy = {};
-            }
-
-            // 直接添加代理配置，使用 __RAW__ 前缀处理函数
-            viteConfig.server.proxy["'/api'"] = {
-               target: 'http://localhost:3000',
+            viteConfigOps.addProxy({
+               perfixName: '/api',
+               profixTarget: 'http://localhost:3000',
                changeOrigin: true,
-               rewrite: "__RAW__(path: string) => path.replace(/^\\/api/, '')",
-            };
+               rewrite: path => path.replace(/^\/api/, ''),
+            });
             break;
          case 'env':
             //处理环境变量
@@ -219,35 +192,28 @@ export async function WebVueToolsSettings(
             //配置ant-design-vue组件库
             tsConfigOps.appendTypes(['ant-design-vue/typings/global.d.ts']);
             gitIgnoreOps.appendLines(['# auto compoents types', 'components.d.ts']);
-            appendRecordToRecord(getWebAntDesignVueDependency(), dependencies);
-            appendRecordToRecord(getWebAutoComponentsDependency(), devDependencies);
-
-            viteConfig.imports?.push("import Components from 'unplugin-vue-components/vite';");
-            viteConfig.imports?.push(
-               "import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';",
-            );
-            viteConfig.plugins?.push(
-               'Components({resolvers: [AntDesignVueResolver({ importStyle: false })]})',
-            );
+            packageJsonOps.addDependency(getWebAntDesignVueDependency());
+            packageJsonOps.addDevDependency(getWebAutoComponentsDependency());
+            viteConfigOps
+               .addImport("import Components from 'unplugin-vue-components/vite';")
+               .addImport(
+                  "import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';",
+               )
+               .addPlugin(
+                  'Components({resolvers: [AntDesignVueResolver({ importStyle: false })]})',
+               );
             break;
       }
    }
 
-   // 统一应用 main.ts 配置
+   //========================================== 保存文件 ======================================
    await maintsOps.saveMainFile();
-   // 写入vite.config.ts和package.json还有tsconfig.json
-   if (viteConfig) {
-      await writeViteConfig(path.join(targetDir, 'vite.config.ts'), viteConfig);
-   }
-   await writePackageJson(targetDir, {
-      ...packageJson,
-      dependencies,
-      devDependencies,
-      scripts,
-   });
-   // 写入tsconfig.json,和.gitignore
+   await viteConfigOps.save();
+   await packageJsonOps.save();
    await tsConfigOps.save();
    await gitIgnoreOps.save();
+
+   //========================================= 其他文件 ======================================
    // 将resources/web/.vscode复制到targetDir中
    const _vsCode = path.resolve(__dirname, '../resources/web/.vscode');
    await copyDirWithSelf(_vsCode, targetDir);

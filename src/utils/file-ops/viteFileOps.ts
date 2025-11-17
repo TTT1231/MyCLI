@@ -1,301 +1,193 @@
 import fs from 'fs-extra';
 import { ViteConfig } from '../../types';
 import { pathExists } from './baseFileOps';
+import {
+   extractComments,
+   generateViteConfigContent,
+   parseConfigObject,
+   parseImports,
+} from './utils';
+interface ViteProxyOptions {
+   perfixName: string;
+   profixTarget: string;
+   changeOrigin?: boolean;
+   rewrite?: (path: string) => string;
+   headers?: Record<string, string>;
+}
 
 /**
- * @description 读取vite文件内容工具
- * @param dir 读取文件路径包含文件名和文件拓展
- * @param viteName
- * @returns vite文件内容
+ * ViteConfig 操作类
+ * @example
+ * const viteOps = new ViteConfigOps('/path/to/vite.config.ts');
+ * await viteOps.init();
+ * viteOps
+ *   .addImport("import vue from '@vitejs/plugin-vue'")
+ *   .addPlugin('vue()')
+ *   .addAlias({ '@': "path.resolve(__dirname, './src')" })
+ *   .addProxy({ perfixName: '/api', profixTarget: 'http://localhost:3000', changeOrigin: true });
+ * await viteOps.save();
  */
-export async function readViteConfig(dir: string): Promise<ViteConfig | null> {
-   let configPath: string | null = null;
+export class ViteConfigOps {
+   private viteConfigPath: string;
+   private viteConfigData: ViteConfig;
 
-   // 检查 vite.config.ts 或 vite.config.js 是否存在
-   if (await pathExists(dir)) {
-      configPath = dir;
+   constructor(viteConfigPath: string) {
+      this.viteConfigPath = viteConfigPath;
+      this.viteConfigData = {} as ViteConfig;
    }
+   async init(): Promise<void> {
+      if (!(await pathExists(this.viteConfigPath))) {
+         throw new Error(`Vite配置文件不存在: ${this.viteConfigPath}`);
+      }
 
-   if (!configPath) {
-      return null;
-   }
-
-   try {
-      // 读取配置文件内容
-      const configContent = await fs.readFile(configPath, 'utf-8');
-
-      // 解析import语句
-      const imports = parseImports(configContent);
-
-      // 解析配置对象
-      const configObject = parseConfigObject(configContent);
-
-      return {
+      const content = await fs.readFile(this.viteConfigPath, 'utf-8');
+      const imports = parseImports(content);
+      const comments = extractComments(content);
+      const configObject = parseConfigObject(content);
+      this.viteConfigData = {
          imports,
+         comments,
+         ...this.viteConfigData,
          ...configObject,
       };
-   } catch (error) {
-      console.error(`读取 Vite 配置文件失败: ${error}`);
-      return null;
-   }
-}
-
-/**
- * @description 用于写入vite配置文件内容
- * @param writeSrcDir 要写入目标路径，包含文件名还有文件拓展（文件不存在时会自动创建）
- * @param viteConfig  vite配置文件内容，例如vite.config.ts内容
- */
-export async function writeViteConfig(writeSrcDir: string, viteConfig: ViteConfig): Promise<void> {
-   // 生成配置文件内容
-   const configContent = generateViteConfigContent(viteConfig);
-
-   try {
-      await fs.writeFile(writeSrcDir, configContent, 'utf-8');
-   } catch (error) {
-      throw new Error(`写入 Vite 配置文件失败: ${error}`);
-   }
-}
-
-function generateViteConfigContent(config: ViteConfig): string {
-   const imports: string[] = [];
-
-   // 添加自定义导入语句
-   if (config.imports && config.imports.length > 0) {
-      imports.push(...config.imports);
-   } else {
-      // 如果没有自定义导入，添加默认的defineConfig导入
-      imports.push("import { defineConfig } from 'vite'");
    }
 
-   // 创建配置对象（排除imports字段）
-   const { imports: _, ...configObject } = config;
-
-   // 生成配置对象字符串
-   const configObjectStr = generateConfigObject(configObject, 0);
-
-   const content = `${imports.join('\n')}
-
-export default defineConfig(${configObjectStr})
-`;
-
-   return content;
-}
-
-function generateConfigObject(obj: any, indent: number = 0, parentKey?: string): string {
-   if (obj === null || obj === undefined) {
-      return 'undefined';
-   }
-
-   if (typeof obj === 'string') {
-      // 如果是plugins数组中的项，且看起来像函数调用，则不加引号
-      if (parentKey === 'plugins' && obj.includes('(') && obj.includes(')')) {
-         return obj;
+   public addImport(importStatement: string): ViteConfigOps {
+      if (this.viteConfigData.imports === undefined) {
+         this.viteConfigData.imports = [];
       }
-      // 如果字符串以 __RAW__ 开头，则作为原始代码输出（不加引号）
-      if (obj.startsWith('__RAW__')) {
-         return obj.substring(7); // 移除 __RAW__ 前缀
+      this.viteConfigData.imports?.push(importStatement);
+      return this;
+   }
+   public addPlugin(pluginStatement: string): ViteConfigOps {
+      if (this.viteConfigData.plugins === undefined) {
+         this.viteConfigData.plugins = [];
       }
-      return `'${obj}'`;
+      this.viteConfigData.plugins.push(pluginStatement);
+      return this;
    }
-
-   if (typeof obj === 'number' || typeof obj === 'boolean') {
-      return String(obj);
-   }
-
-   if (Array.isArray(obj)) {
-      if (obj.length === 0) {
-         return '[]';
+   /**
+    * 添加代理配置
+    * @param proxy 代理配置选项
+    */
+   public addProxy(proxy: ViteProxyOptions): ViteConfigOps {
+      if (this.viteConfigData.server === undefined) {
+         this.viteConfigData.server = {};
       }
-      const items = obj.map(item => generateConfigObject(item, indent + 2, parentKey));
-      return `[\n${' '.repeat(indent + 2)}${items.join(`,\n${' '.repeat(indent + 2)}`)}\n${' '.repeat(indent)}]`;
-   }
-
-   if (typeof obj === 'object') {
-      const entries = Object.entries(obj).filter(([_, value]) => value !== undefined);
-      if (entries.length === 0) {
-         return '{}';
+      if (this.viteConfigData.server.proxy === undefined) {
+         this.viteConfigData.server.proxy = {};
       }
 
-      const lines = entries.map(([key, value]) => {
-         const formattedValue = generateConfigObject(value, indent + 2, key);
-         return `${' '.repeat(indent + 2)}${key}: ${formattedValue}`;
-      });
+      const proxyKey = `'${proxy.perfixName}'`;
+      const proxyConfig: any = {
+         target: proxy.profixTarget,
+      };
 
-      return `{\n${lines.join(',\n')}\n${' '.repeat(indent)}}`;
-   }
-
-   return String(obj);
-}
-
-function parseImports(content: string): string[] {
-   const imports: string[] = [];
-   const lines = content.split('\n');
-
-   for (const line of lines) {
-      const trimmedLine = line.trim();
-      if (trimmedLine.startsWith('import ') && !trimmedLine.includes('//')) {
-         imports.push(trimmedLine);
-      }
-   }
-
-   return imports;
-}
-
-function parseConfigObject(content: string): Omit<ViteConfig, 'imports'> {
-   const config: Omit<ViteConfig, 'imports'> = {};
-
-   try {
-      // 查找 defineConfig 调用
-      const defineConfigMatch = content.match(/defineConfig\s*\(\s*({[\s\S]*})\s*\)/);
-      if (!defineConfigMatch) {
-         return config;
+      if (proxy.changeOrigin !== undefined) {
+         proxyConfig.changeOrigin = proxy.changeOrigin;
       }
 
-      const configObjectStr = defineConfigMatch[1];
+      if (proxy.rewrite) {
+         // 提取函数体,重新构建为标准格式
+         const rewriteFunctionStr = proxy.rewrite.toString();
+         let functionBody = '';
+         let originalParamName = 'path'; // 默认参数名
 
-      // 解析常见的配置项
-      parseStringProperty(configObjectStr, 'root', config);
-      parseStringProperty(configObjectStr, 'base', config);
-      parseStringProperty(configObjectStr, 'mode', config);
-      parseStringProperty(configObjectStr, 'publicDir', config);
-      parseStringProperty(configObjectStr, 'cacheDir', config);
-      parseStringProperty(configObjectStr, 'envDir', config);
-
-      // 解析数组属性
-      parseArrayProperty(configObjectStr, 'envPrefix', config);
-
-      // 解析布尔属性
-      parseBooleanProperty(configObjectStr, 'clearScreen', config);
-
-      // 解析嵌套对象
-      parseNestedObject(configObjectStr, 'server', config);
-      parseNestedObject(configObjectStr, 'build', config);
-      parseNestedObject(configObjectStr, 'preview', config);
-      parseNestedObject(configObjectStr, 'resolve', config);
-      parseNestedObject(configObjectStr, 'css', config);
-      parseNestedObject(configObjectStr, 'optimizeDeps', config);
-      parseNestedObject(configObjectStr, 'ssr', config);
-      parseNestedObject(configObjectStr, 'worker', config);
-
-      // 解析plugins数组
-      parsePluginsArray(configObjectStr, config);
-
-      // 解析define对象
-      parseDefineObject(configObjectStr, config);
-   } catch (error) {
-      console.error('解析配置对象失败:', error);
-   }
-
-   return config;
-}
-
-function parseStringProperty(content: string, key: string, config: any): void {
-   const regex = new RegExp(`${key}\\s*:\\s*['"\`]([^'"\`]+)['"\`]`);
-   const match = content.match(regex);
-   if (match) {
-      config[key] = match[1];
-   }
-}
-
-function parseArrayProperty(content: string, key: string, config: any): void {
-   const regex = new RegExp(`${key}\\s*:\\s*\\[([^\\]]+)\\]`);
-   const match = content.match(regex);
-   if (match) {
-      const arrayContent = match[1];
-      const items = arrayContent
-         .split(',')
-         .map(item => {
-            const trimmed = item.trim();
-            if (trimmed.startsWith('"') || trimmed.startsWith("'") || trimmed.startsWith('`')) {
-               return trimmed.slice(1, -1);
+         if (rewriteFunctionStr.includes('=>')) {
+            // 箭头函数: (path) => path.replace(...) 或 path => path.replace(...)
+            // 先提取参数名
+            const paramMatch = rewriteFunctionStr.match(/\(?([^)=]*?)\)?\s*=>/);
+            if (paramMatch) {
+               originalParamName = paramMatch[1].trim();
             }
-            return trimmed;
-         })
-         .filter(item => item);
-      config[key] = items;
-   }
-}
 
-function parseBooleanProperty(content: string, key: string, config: any): void {
-   const regex = new RegExp(`${key}\\s*:\\s*(true|false)`);
-   const match = content.match(regex);
-   if (match) {
-      config[key] = match[1] === 'true';
-   }
-}
+            const arrowMatch = rewriteFunctionStr.match(/=>\s*(.*)/);
+            if (arrowMatch) {
+               functionBody = arrowMatch[1].trim();
+            }
+         } else {
+            // 普通函数: function(path) { ... }
+            // 先提取参数名
+            const paramMatch = rewriteFunctionStr.match(/function\s*\(\s*([^)]*?)\s*\)/);
+            if (paramMatch) {
+               originalParamName = paramMatch[1].trim();
+            }
 
-function parseNestedObject(content: string, key: string, config: any): void {
-   const regex = new RegExp(`${key}\\s*:\\s*{([^}]+)}`);
-   const match = content.match(regex);
-   if (match) {
-      const objectContent = match[1];
-      const nestedConfig: any = {};
+            const bodyMatch = rewriteFunctionStr.match(/{\s*([\s\S]*?)\s*}/);
+            if (bodyMatch) {
+               functionBody = bodyMatch[1].trim();
+               // 如果以 return 开头,移除 return 关键字
+               if (functionBody.startsWith('return ')) {
+                  functionBody = functionBody.substring(7).trim();
+               }
+               // 移除末尾的分号
+               if (functionBody.endsWith(';')) {
+                  functionBody = functionBody.substring(0, functionBody.length - 1);
+               }
+            }
+         }
 
-      // 解析嵌套对象的属性
-      parseStringProperty(objectContent, 'host', nestedConfig);
-      parseStringProperty(objectContent, 'outDir', nestedConfig);
-      parseStringProperty(objectContent, 'assetsDir', nestedConfig);
-      parseStringProperty(objectContent, 'target', nestedConfig);
-      parseStringProperty(objectContent, 'format', nestedConfig);
+         // 将函数体中的原始参数名替换为标准的 'path'
+         if (originalParamName !== 'path') {
+            // 使用正则表达式替换,确保替换的是完整的单词
+            const paramRegex = new RegExp(`\\b${originalParamName}\\b`, 'g');
+            functionBody = functionBody.replace(paramRegex, 'path');
+         }
 
-      // 解析数字属性
-      const portMatch = objectContent.match(/port\s*:\s*(\d+)/);
-      if (portMatch) {
-         nestedConfig.port = parseInt(portMatch[1]);
+         // 构建标准格式的函数表达式
+         proxyConfig.rewrite = `__RAW__(path) => ${functionBody}`;
       }
 
-      // 解析布尔属性
-      parseBooleanProperty(objectContent, 'open', nestedConfig);
-      parseBooleanProperty(objectContent, 'strictPort', nestedConfig);
-      parseBooleanProperty(objectContent, 'emptyOutDir', nestedConfig);
-      parseBooleanProperty(objectContent, 'sourcemap', nestedConfig);
-
-      if (Object.keys(nestedConfig).length > 0) {
-         config[key] = nestedConfig;
+      if (proxy.headers) {
+         proxyConfig.headers = proxy.headers;
       }
+
+      this.viteConfigData.server.proxy[proxyKey] = proxyConfig;
+      return this;
    }
-}
+   /**
+    * 添加路径别名,自动添加 __RAW__ 前缀以保留代码语法
+    * @param aliasRecord 别名记录,例如 { '@': "path.resolve(__dirname, './src')" }
+    * !注意: 因为alias值必须是代码表达式，而不是字符串字面量，因此必须要经过__RAW___处理
+    */
+   public addAlias(aliasRecord: Record<string, string>): ViteConfigOps {
+      if (this.viteConfigData.resolve === undefined) {
+         this.viteConfigData.resolve = {};
+      }
+      if (this.viteConfigData.resolve.alias === undefined) {
+         this.viteConfigData.resolve.alias = {};
+      }
 
-function parsePluginsArray(content: string, config: any): void {
-   const pluginsMatch = content.match(/plugins\s*:\s*\[([^\]]+)\]/);
-   if (pluginsMatch) {
-      const pluginsContent = pluginsMatch[1];
-      // 解析插件数组中的函数调用
-      const plugins: string[] = [];
-
-      // 分割插件，处理可能的嵌套和逗号
-      const pluginItems = pluginsContent.split(',').map(item => item.trim());
-
-      for (const item of pluginItems) {
-         if (item && !item.startsWith('//')) {
-            // 保留函数调用格式，不加引号
-            plugins.push(item);
+      // 添加别名,自动处理 __RAW__ 前缀
+      for (const [key, value] of Object.entries(aliasRecord)) {
+         // 如果用户已经添加了 __RAW__ 前缀,直接使用;否则自动添加
+         if (value.startsWith('__RAW__')) {
+            this.viteConfigData.resolve.alias[`'${key}'`] = value;
+         } else {
+            // alias 配置必须是代码表达式,所以自动添加 __RAW__
+            this.viteConfigData.resolve.alias[`'${key}'`] = `__RAW__${value}`;
          }
       }
 
-      config.plugins = plugins;
+      return this;
    }
-}
 
-function parseDefineObject(content: string, config: any): void {
-   const defineMatch = content.match(/define\s*:\s*{([^}]+)}/);
-   if (defineMatch) {
-      const defineContent = defineMatch[1];
-      const defineObj: any = {};
-
-      // 解析define对象中的键值对
-      const pairs = defineContent.split(',');
-      for (const pair of pairs) {
-         const [key, value] = pair.split(':').map(s => s.trim());
-         if (key && value) {
-            const cleanKey = key.replace(/['"]/g, '');
-            const cleanValue = value.replace(/['"]/g, '');
-            defineObj[cleanKey] = cleanValue;
-         }
+   async saveNoComments(): Promise<void> {
+      const configContent = generateViteConfigContent(this.viteConfigData);
+      try {
+         await fs.writeFile(this.viteConfigPath, configContent, 'utf-8');
+      } catch (error) {
+         throw new Error(`写入 Vite 配置文件失败: ${error}`);
       }
+   }
+   async save(): Promise<void> {
+      // 生成配置文件内容(带注释)
+      const configContent = generateViteConfigContent(this.viteConfigData, true);
 
-      if (Object.keys(defineObj).length > 0) {
-         config.define = defineObj;
+      try {
+         await fs.writeFile(this.viteConfigPath, configContent, 'utf-8');
+      } catch (error) {
+         throw new Error(`写入 Vite 配置文件失败: ${error}`);
       }
    }
 }
