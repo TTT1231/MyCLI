@@ -32,9 +32,9 @@ import {
    getWebNProgressDependency,
    getWebAntDesignVueDependency,
    getWebAutoComponentsDependency,
+   getWebScssDependency,
 } from '../project-settings/web-vue.setting';
 
-import { type ViteConfig } from '../types';
 import { copyFileSync, copySync, writeFileSync } from 'fs-extra';
 
 //处理web-vue配置设置
@@ -187,6 +187,10 @@ export async function WebVueToolsSettings(
                path.resolve(__dirname, '../resources/web/ENVREADME.md'),
                path.join(targetDir, 'ENVREADME.md'),
             );
+            break;
+         case 'scss':
+            //配置 SCSS 支持
+            packageJsonOps.addDependency(getWebScssDependency());
             break;
          case 'ant-design-vue':
             //配置ant-design-vue组件库

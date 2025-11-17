@@ -46,3 +46,6 @@ export const WEB_ANT_DESIGN_VUE_DEPENDENCY: Record<string, string> = {
 export const WEB_AUTO_COMPONENTS_DEV_DEPENDENCY: Record<string, string> = {
    'unplugin-vue-components': '^30.0.0',
 };
+export const WEB_SCSS_DEPENDENCY: Record<string, string> = {
+   sass: '^1.94.0',
+};

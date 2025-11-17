@@ -10,6 +10,7 @@ import {
    WEB_NPROGRESS_DEPENDENCY,
    WEB_ANT_DESIGN_VUE_DEPENDENCY,
    WEB_AUTO_COMPONENTS_DEV_DEPENDENCY,
+   WEB_SCSS_DEPENDENCY,
 } from './constant';
 
 //web-eslint和pretter依赖
@@ -46,6 +47,10 @@ export function getWebPiniaDependency(): Record<string, string> {
 //web-axios依赖
 export function getWebAxiosDependency(): Record<string, string> {
    return WEB_AXIOS_DEPENDENCY;
+}
+//scss 依赖
+export function getWebScssDependency(): Record<string, string> {
+   return WEB_SCSS_DEPENDENCY;
 }
 
 //web-ant-design-vue依赖

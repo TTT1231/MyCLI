@@ -28,6 +28,7 @@ export const TEMPLATE_TOOLS: Record<string, Array<{ value: string; label: string
       { value: 'vue-router', label: 'Vue Router - 路由管理' },
       { value: 'vite-proxy', label: 'Vite Proxy - 代理配置' },
       { value: 'env', label: 'env - 环境变量管理' },
+      { value: 'scss', label: 'SCSS - 样式预处理器' },
       { value: 'ant-design-vue', label: 'Ant Design Vue - 组件库' },
    ],
    'electron-vue': [
