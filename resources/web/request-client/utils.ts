@@ -1,13 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { defu as merge } from 'defu';
+/**
+ * bindMethods(this) 会遍历当前实例的原型方法，把每个“普通函数方法”都用 Function.prototype.bind 绑定到该实例上，确保方法里的 this 永远指向这个实例。
+ * 仅绑定“普通方法”，不会动构造函数、getter/setter、非函数属性。
+ * 其实现大致逻辑是：拿到原型 → 枚举属性 → 如果是函数且不是 constructor 、不是 getter/setter → method = method.bind(instance) 。
+ *
+ * 主要就是支持 const {method1} = instance; method1()不会出现this指向错误的问题。
+ */
 export function bindMethods<T extends object>(instance: T): void {
    const prototype = Object.getPrototypeOf(instance);
    const propertyNames = Object.getOwnPropertyNames(prototype);
 
    propertyNames.forEach(propertyName => {
-      const descriptor = Object.getOwnPropertyDescriptor(
-         prototype,
-         propertyName
-      );
+      const descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
       const propertyValue = instance[propertyName as keyof T];
 
       if (
@@ -22,40 +27,15 @@ export function bindMethods<T extends object>(instance: T): void {
    });
 }
 
-// merge 方法实现
-export function merge<T extends object>(...sources: Partial<T>[]): T {
-   if (sources.length === 0) return {} as T;
-   const target = { ...sources[0] } as Record<string, any>;
+export {merge}
 
-   for (let i = 1; i < sources.length; i++) {
-      const source = sources[i] as Record<string, any>;
-      if (!source) continue;
-
-      for (const key in source) {
-         if (Object.prototype.hasOwnProperty.call(source, key)) {
-            const targetValue = target[key];
-            const sourceValue = source[key];
-
-            // 如果是对象且不是数组，递归合并（处理嵌套对象如 headers）
-            if (isPlainObject(targetValue) && isPlainObject(sourceValue)) {
-               target[key] = merge(targetValue, sourceValue);
-            } else if (sourceValue !== undefined) {
-               // 非对象类型或数组，直接覆盖（用户配置优先）
-               target[key] = sourceValue;
-            }
-         }
-      }
-   }
-
-   return target as T;
+//判断是否是函数
+export function isFunction(value: unknown): value is Function {
+   return typeof value === 'function';
 }
 
-// 辅助函数：判断是否为纯对象（排除数组、null、Date等特殊对象）
-function isPlainObject(value: any): value is object {
-   return (
-      typeof value === 'object' &&
-      value !== null &&
-      !Array.isArray(value) &&
-      Object.prototype.toString.call(value) === '[object Object]'
-   );
+//判断是否是undefined
+export function isUndefined(value: unknown): value is undefined {
+   return typeof value === 'undefined';
 }
+

@@ -22,17 +22,14 @@ import {
    updateHtmlTitle,
 } from '../utils/file-ops';
 import {
-   getWebEslintPrettierDevDependency,
+   getWebCodeFormatRequireDep,
+   getWebComponentVueRequireDep,
    getWebDevtoolsDevDependency,
-   getWebTailwindcssDevDependency,
-   getWebVueRouterDependency,
    getWebPiniaDependency,
-   getWebAxiosDependency,
-   getWebTailwindcssDependency,
-   getWebNProgressDependency,
-   getWebAntDesignVueDependency,
-   getWebAutoComponentsDependency,
+   getWebReuqestRequireDep,
    getWebScssDependency,
+   getWebTailwindcssRequireDep,
+   getWebVueRouterRequireDep,
 } from '../project-settings/web-vue.setting';
 
 import { copyFileSync, copySync, writeFileSync } from 'fs-extra';
@@ -74,7 +71,7 @@ export async function WebVueToolsSettings(
       switch (tool) {
          case 'eslint-prettier':
             //配置 ESLint 和 Prettierfor Vue
-            packageJsonOps.addDevDependency(getWebEslintPrettierDevDependency());
+            packageJsonOps.addBothDependencies(getWebCodeFormatRequireDep());
             const newScripts: Record<string, string> = {
                lint: 'eslint --ext .ts .',
                format: 'prettier --write .',
@@ -95,8 +92,7 @@ export async function WebVueToolsSettings(
             break;
          case 'tailwindcss':
             // 配置 TailwindCSS for Vue
-            packageJsonOps.addDevDependency(getWebTailwindcssDevDependency());
-            packageJsonOps.addDependency(getWebTailwindcssDependency());
+            packageJsonOps.addBothDependencies(getWebTailwindcssRequireDep());
             //在targetDir/src/assets创建一个tailwind.css文件，然后内容如下
             //@import "tailwindcss";
             //这里还要操作vite.config.ts
@@ -111,8 +107,9 @@ export async function WebVueToolsSettings(
             maintsOps.addImports(["import './assets/tailwind.css';"]);
             break;
          case 'axios':
-            //将 axios 添加到 dependencies
-            packageJsonOps.addDependency(getWebAxiosDependency());
+            //请求依赖
+            packageJsonOps.addBothDependencies(getWebReuqestRequireDep());
+
             //复制文件夹
             const axiosRawPath = path.resolve(__dirname, '../resources/web/request-client');
             await copyDirWithSelf(axiosRawPath, path.join(targetDir, 'src'));
@@ -131,8 +128,7 @@ export async function WebVueToolsSettings(
             break;
          case 'vue-router':
             //配置 Vue Router
-            packageJsonOps.addDependency(getWebVueRouterDependency());
-            packageJsonOps.addDependency(getWebNProgressDependency());
+            packageJsonOps.addBothDependencies(getWebVueRouterRequireDep());
 
             const routerStorgeRawPath = path.resolve(__dirname, '../resources/web/vue-router');
             copyDirWithRename(routerStorgeRawPath, path.join(targetDir, 'src'), 'router');
@@ -196,8 +192,7 @@ export async function WebVueToolsSettings(
             //配置ant-design-vue组件库
             tsConfigOps.appendTypes(['ant-design-vue/typings/global.d.ts']);
             gitIgnoreOps.appendLines(['# auto compoents types', 'components.d.ts']);
-            packageJsonOps.addDependency(getWebAntDesignVueDependency());
-            packageJsonOps.addDevDependency(getWebAutoComponentsDependency());
+            packageJsonOps.addBothDependencies(getWebComponentVueRequireDep());
             viteConfigOps
                .addImport("import Components from 'unplugin-vue-components/vite';")
                .addImport(
@@ -218,7 +213,7 @@ export async function WebVueToolsSettings(
    await gitIgnoreOps.save();
 
    //========================================= 其他文件 ======================================
-   // 将resources/web/.vscode复制到targetDir中
-   const _vsCode = path.resolve(__dirname, '../resources/web/.vscode');
-   await copyDirWithSelf(_vsCode, targetDir);
+   // // 将resources/web/.vscode复制到targetDir中
+   // const _vsCode = path.resolve(__dirname, '../resources/web/.vscode');
+   // await copyDirWithSelf(_vsCode, targetDir);
 }

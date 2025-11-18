@@ -34,6 +34,23 @@ export class PackageJsonOps {
    }
 
    /**
+    * 对依赖对象进行字母排序
+    * @param deps - 依赖对象
+    * @returns 排序后的依赖对象
+    */
+   private sortDependencies(deps: Record<string, string>): Record<string, string> {
+      return Object.keys(deps)
+         .sort()
+         .reduce(
+            (acc, key) => {
+               acc[key] = deps[key];
+               return acc;
+            },
+            {} as Record<string, string>,
+         );
+   }
+
+   /**
     * 按照标准顺序排列 package.json 的字段
     * @param pkg - package.json 对象
     * @param fieldOrder - 字段排序规则,默认为标准顺序
@@ -83,7 +100,18 @@ export class PackageJsonOps {
       // 首先按照指定顺序添加字段
       for (const field of fieldOrder) {
          if (pkg[field] !== undefined) {
-            sorted[field] = pkg[field];
+            // 对依赖类字段进行内部排序
+            if (
+               (field === 'dependencies' ||
+                  field === 'devDependencies' ||
+                  field === 'peerDependencies' ||
+                  field === 'optionalDependencies') &&
+               typeof pkg[field] === 'object'
+            ) {
+               sorted[field] = this.sortDependencies(pkg[field] as Record<string, string>);
+            } else {
+               sorted[field] = pkg[field];
+            }
          }
       }
 
@@ -127,6 +155,23 @@ export class PackageJsonOps {
          this.packageJsonData.devDependencies = {};
       }
       appendRecordToRecord(devDependency, this.packageJsonData.devDependencies);
+      return this;
+   }
+
+   /**
+    * 同时添加 dependencies 和 devDependencies
+    * @param deps 包含 dependencies 和 devDependencies 的对象
+    */
+   public addBothDependencies(deps: {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+   }): PackageJsonOps {
+      if (deps.dependencies) {
+         this.addDependency(deps.dependencies);
+      }
+      if (deps.devDependencies) {
+         this.addDevDependency(deps.devDependencies);
+      }
       return this;
    }
 

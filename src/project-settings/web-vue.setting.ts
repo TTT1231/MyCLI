@@ -1,21 +1,18 @@
 import {
-   WEB_ESLINT_DEV_DEPENDENCY,
-   WEB_PRETTIER_DEV_DEPENDENCY,
+   WEB_CODE_FORMAT,
    WEB_DEVTOOLS_DEV_DEPENDENCY,
-   WEB_TAILWINDCSS_DEV_DEPENDENCY,
-   WEB_ROUTER_DEPENDENCY,
    WEB_PINIA_DEPENDENCY,
-   WEB_AXIOS_DEPENDENCY,
-   WEB_TAILWINDCSS_DEPENDENCY,
-   WEB_NPROGRESS_DEPENDENCY,
-   WEB_ANT_DESIGN_VUE_DEPENDENCY,
-   WEB_AUTO_COMPONENTS_DEV_DEPENDENCY,
+   WEB_REQUEST,
+   WEB_Component_VUE,
    WEB_SCSS_DEPENDENCY,
+   WEB_TAILWINDCSS,
+   WEB_ROUTER,
 } from './constant';
+import type { RequireDependencies } from './types';
 
-//web-eslint和pretter依赖
-export function getWebEslintPrettierDevDependency(): Record<string, string> {
-   return { ...WEB_ESLINT_DEV_DEPENDENCY, ...WEB_PRETTIER_DEV_DEPENDENCY };
+//web代码格式化依赖
+export function getWebCodeFormatRequireDep(): RequireDependencies {
+   return WEB_CODE_FORMAT;
 }
 
 //web-devtools依赖
@@ -24,19 +21,13 @@ export function getWebDevtoolsDevDependency(): Record<string, string> {
 }
 
 //web-tailwindcss依赖
-export function getWebTailwindcssDevDependency(): Record<string, string> {
-   return WEB_TAILWINDCSS_DEV_DEPENDENCY;
-}
-export function getWebTailwindcssDependency(): Record<string, string> {
-   return WEB_TAILWINDCSS_DEPENDENCY;
+export function getWebTailwindcssRequireDep(): RequireDependencies {
+   return WEB_TAILWINDCSS;
 }
 
 //web-vue-router依赖
-export function getWebVueRouterDependency(): Record<string, string> {
-   return WEB_ROUTER_DEPENDENCY;
-}
-export function getWebNProgressDependency(): Record<string, string> {
-   return WEB_NPROGRESS_DEPENDENCY;
+export function getWebVueRouterRequireDep(): RequireDependencies {
+   return WEB_ROUTER;
 }
 
 //web-pinia依赖
@@ -44,19 +35,15 @@ export function getWebPiniaDependency(): Record<string, string> {
    return WEB_PINIA_DEPENDENCY;
 }
 
-//web-axios依赖
-export function getWebAxiosDependency(): Record<string, string> {
-   return WEB_AXIOS_DEPENDENCY;
+//web请求相关依赖
+export function getWebReuqestRequireDep(): RequireDependencies {
+   return WEB_REQUEST;
+}
+//web组件库依赖
+export function getWebComponentVueRequireDep(): RequireDependencies {
+   return WEB_Component_VUE;
 }
 //scss 依赖
 export function getWebScssDependency(): Record<string, string> {
    return WEB_SCSS_DEPENDENCY;
-}
-
-//web-ant-design-vue依赖
-export function getWebAntDesignVueDependency(): Record<string, string> {
-   return WEB_ANT_DESIGN_VUE_DEPENDENCY;
-}
-export function getWebAutoComponentsDependency(): Record<string, string> {
-   return WEB_AUTO_COMPONENTS_DEV_DEPENDENCY;
 }
