@@ -1,0 +1,155 @@
+{
+   //============================== vue快捷指令 ==============================//
+   "vue-script-setup": {
+      "scope": "vue",
+      "prefix": "!vue",
+      "body": [
+         "<script setup lang=\"ts\">",
+         "const props = defineProps<{",
+         "  modelValue?: boolean,",
+         "}>()",
+         "$1",
+         "</script>",
+         "",
+         "<template>",
+         "  <div>",
+         "    <slot/>",
+         "  </div>",
+         "</template>"
+      ]
+   },
+   "import": {
+      "scope": "javascript,typescript",
+      "prefix": "im",
+      "body": ["import { $2 } from '$1';"],
+      "description": "Import a module"
+   },
+   "export-all": {
+      "scope": "javascript,typescript",
+      "prefix": "ex",
+      "body": ["export * from '$1';"],
+      "description": "Export a module"
+   },
+   //=========================== 文档快捷键命令相关 ==========================//
+   "code-group": {
+      "scope": "markdown",
+      "prefix": [":::code-group"],
+      "body": ["::: code-group", "$1", ":::"],
+      "description": "代码组"
+   },
+   "code++": {
+      "scope": "typescript",
+      "prefix": ["!code++"],
+      "body": ["[!code ++]"],
+      "description": "代码块++"
+   },
+   "code--": {
+      "scope": "typescript",
+      "prefix": ["!code--"],
+      "body": ["[!code --]"],
+      "description": "代码块--"
+   },
+   "code-warning": {
+      "scope": "typescript",
+      "prefix": ["!codewarning"],
+      "body": ["[!code warning]"],
+      "description": "代码块警告"
+   },
+   "code-error": {
+      "scope": "typescript",
+      "prefix": ["!codeerror"],
+      "body": ["[!code error]"],
+      "description": "代码块错误"
+   },
+   "details-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::details"],
+      "body": ["::: details", "$1", ":::"],
+      "description": "通知"
+   },
+   "info-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::info"],
+      "body": ["::: info 通知", "$1", ":::"],
+      "description": "通知"
+   },
+   "tip-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::tip"],
+      "body": ["::: tip 提示", "$1", ":::"],
+      "description": "提示"
+   },
+   "warning-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::warning"],
+      "body": ["::: warning 注意", "$1", ":::"],
+      "description": "注意"
+   },
+   "danger-vitepress": {
+      "scope": "markdown",
+      "prefix": [":::danger"],
+      "body": ["::: danger 危险", "$1", ":::"],
+      "description": "危险"
+   },
+   "NOTE-Github": {
+      "scope": "markdown",
+      "prefix": ["!NOTE"],
+      "body": ["> [!NOTE]", "$1", ">"],
+      "description": "笔记"
+   },
+   "TIP-Github": {
+      "scope": "markdown",
+      "prefix": ["!TIP"],
+      "body": ["> [!TIP] 提示", "$1", ">"],
+      "description": "提示"
+   },
+   "IMPORTANT-Github": {
+      "scope": "markdown",
+      "prefix": ["!IMPORTANT"],
+      "body": ["> [!IMPORTANT] 重要", "$1", ">"],
+      "description": "重要"
+   },
+   "WARNING-Github": {
+      "scope": "markdown",
+      "prefix": ["!WARNING"],
+      "body": ["> [!WARNING] 注意", "$1", ">"],
+      "description": "注意"
+   },
+   "CAUTION-Github": {
+      "scope": "markdown",
+      "prefix": ["!CAUTION"],
+      "body": ["> [!CAUTION] 小心", "$1", ">"],
+      "description": "小心"
+   },
+   //=========================== 拼写检查快捷命令 ==========================//
+   "cspell:disable": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["cspell:disable"],
+      "body": ["//cspell:disable"],
+      "description": "禁用后面所有的拼写检查"
+   },
+   "cspell:enable": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["cspell:enable"],
+      "body": ["//cspell:enable"],
+      "description": "启用后面所有的拼写检查"
+   },
+   "spell-checker:disable": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["spell-checker:disable"],
+      "body": ["//spell-checker:disable"],
+      "description": "禁用拼写检查开始符"
+   },
+   "spell-checker:enable": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["spell-checker:enable"],
+      "body": ["//spell-checker:enable"],
+      "description": "禁用拼写检查结束符"
+   },
+   "cspell:disable-next-line": {
+      "scope": "vue,typescript,javascript",
+      "prefix": ["cspell:disable-next-line"],
+      "body": ["//cspell:disable-next-line"],
+      "description": "禁用下一行的拼写检查"
+   }
+}

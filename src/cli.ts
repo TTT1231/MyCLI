@@ -3,13 +3,15 @@
 import { cac } from 'cac';
 import chalk from 'chalk';
 import updateNotifier from 'update-notifier';
-import { initProject, addVscodeSettings, newProject } from './commands';
+import { initProject, newProject, addProjectSettings } from './commands';
 
 import pkg from '../package.json';
 
 // 检查更新
-const notifier = updateNotifier({ pkg });
-notifier.notify();
+const notifier = updateNotifier({ pkg, shouldNotifyInNpmScript: true });
+if (process.env.CI !== 'true') {
+   notifier.notify({ isGlobal: true });
+}
 
 const cli = cac('my-cli');
 
@@ -21,9 +23,9 @@ cli.command('new [project-name]', '创建新项目').action(async projectName =>
    await newProject(projectName);
 });
 
-// vscode 命名，用于添加.vscode，添加nest new编译器风格
-cli.command('vscode', '添加.vscode爱好设置').action(async () => {
-   await addVscodeSettings();
+// add 命令，用于配置项目
+cli.command('add [config-type]', '添加项目配置').action(async configType => {
+   await addProjectSettings(configType);
 });
 
 // init 命令
