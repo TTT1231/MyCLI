@@ -6,6 +6,7 @@ import updateNotifier from 'update-notifier';
 import { newProject, addProjectSettings } from './commands';
 
 import pkg from '../package.json';
+import { listTemplates } from './commands/ls';
 
 // 检查更新
 const notifier = updateNotifier({ pkg, shouldNotifyInNpmScript: true });
@@ -23,6 +24,10 @@ cli.command('new [project-name]', '创建新项目').action(async projectName =>
    await newProject(projectName);
 });
 
+// ls 命名,用于列出可用模板
+cli.command('ls', '模板列表').action(async () => {
+   await listTemplates();
+});
 // add 命令，用于配置项目
 cli.command('add [config-type]', '添加项目配置').action(async configType => {
    await addProjectSettings(configType);
