@@ -3,7 +3,7 @@
 import { cac } from 'cac';
 import chalk from 'chalk';
 import updateNotifier from 'update-notifier';
-import { initProject, newProject, addProjectSettings } from './commands';
+import { newProject, addProjectSettings } from './commands';
 
 import pkg from '../package.json';
 
@@ -26,11 +26,6 @@ cli.command('new [project-name]', '创建新项目').action(async projectName =>
 // add 命令，用于配置项目
 cli.command('add [config-type]', '添加项目配置').action(async configType => {
    await addProjectSettings(configType);
-});
-
-// init 命令
-cli.command('init', '在当前目录初始化项目').action(async () => {
-   await initProject();
 });
 
 // 错误处理

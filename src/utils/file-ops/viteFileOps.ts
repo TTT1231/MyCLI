@@ -8,8 +8,8 @@ import {
    parseImports,
 } from './utils';
 interface ViteProxyOptions {
-   perfixName: string;
-   profixTarget: string;
+   prefixName: string;
+   prefixTarget: string;
    changeOrigin?: boolean;
    rewrite?: (path: string) => string;
    headers?: Record<string, string>;
@@ -24,7 +24,7 @@ interface ViteProxyOptions {
  *   .addImport("import vue from '@vitejs/plugin-vue'")
  *   .addPlugin('vue()')
  *   .addAlias({ '@': "path.resolve(__dirname, './src')" })
- *   .addProxy({ perfixName: '/api', profixTarget: 'http://localhost:3000', changeOrigin: true });
+ *   .addProxy({ prefixName: '/api', prefixTarget: 'http://localhost:3000', changeOrigin: true });
  * await viteOps.save();
  */
 export class ViteConfigOps {
@@ -78,9 +78,9 @@ export class ViteConfigOps {
          this.viteConfigData.server.proxy = {};
       }
 
-      const proxyKey = `'${proxy.perfixName}'`;
+      const proxyKey = `'${proxy.prefixName}'`;
       const proxyConfig: any = {
-         target: proxy.profixTarget,
+         target: proxy.prefixTarget,
       };
 
       if (proxy.changeOrigin !== undefined) {

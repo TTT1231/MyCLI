@@ -26,7 +26,7 @@ import {
    getWebComponentVueRequireDep,
    getWebDevtoolsDevDependency,
    getWebPiniaDependency,
-   getWebReuqestRequireDep,
+   getWebRequestRequireDep,
    getWebScssDependency,
    getWebTailwindcssRequireDep,
    getWebVueRouterRequireDep,
@@ -47,12 +47,12 @@ export async function WebVueToolsSettings(
    //读取并初始化package.json,tsconfig.json,.gitignore,main.ts,vite.config.ts
    const packageJsonOps = new PackageJsonOps(path.resolve(targetDir, 'package.json'));
    const tsConfigOps = new TsconfigOps(path.resolve(targetDir, 'tsconfig.app.json'));
-   const maintsOps = new MainFileOps(path.join(targetDir, 'src', 'main.ts'));
+   const mainTsOps = new MainFileOps(path.join(targetDir, 'src', 'main.ts'));
    const viteConfigOps = new ViteConfigOps(path.join(targetDir, 'vite.config.ts'));
 
    const gitIgnoreOps = await createGitOpsInstance(targetDir);
    await tsConfigOps.init();
-   await maintsOps.init();
+   await mainTsOps.init();
    await packageJsonOps.init();
    await viteConfigOps.init();
 
@@ -70,7 +70,7 @@ export async function WebVueToolsSettings(
    for (const tool of selectedTools) {
       switch (tool) {
          case 'eslint-prettier':
-            //配置 ESLint 和 Prettierfor Vue
+            //配置 ESLint 和 Prettier for Vue
             packageJsonOps.addBothDependencies(getWebCodeFormatRequireDep());
             const newScripts: Record<string, string> = {
                lint: 'eslint --ext .ts .',
@@ -104,11 +104,11 @@ export async function WebVueToolsSettings(
                .addImport('import tailwindcss from "@tailwindcss/vite";')
                .addPlugin('tailwindcss()');
             // 添加到 main.ts 配置中
-            maintsOps.addImports(["import './assets/tailwind.css';"]);
+            mainTsOps.addImports(["import './assets/tailwind.css';"]);
             break;
          case 'axios':
             //请求依赖
-            packageJsonOps.addBothDependencies(getWebReuqestRequireDep());
+            packageJsonOps.addBothDependencies(getWebRequestRequireDep());
 
             //复制文件夹
             const axiosRawPath = path.resolve(__dirname, '../resources/web/request-client');
@@ -122,24 +122,24 @@ export async function WebVueToolsSettings(
             const piniaStoreRawPath = path.resolve(__dirname, '../resources/web/store');
             await copyDirWithRename(piniaStoreRawPath, path.join(targetDir, 'src'), 'store');
             // 添加 pinia 的 main.ts 配置
-            maintsOps.addImports(['import { setupStore } from "@/store";']);
-            maintsOps.addSetupCodes(['// 配置 Pinia 状态管理', 'setupStore(app);']);
+            mainTsOps.addImports(['import { setupStore } from "@/store";']);
+            mainTsOps.addSetupCodes(['// 配置 Pinia 状态管理', 'setupStore(app);']);
 
             break;
          case 'vue-router':
             //配置 Vue Router
             packageJsonOps.addBothDependencies(getWebVueRouterRequireDep());
 
-            const routerStorgeRawPath = path.resolve(__dirname, '../resources/web/vue-router');
-            copyDirWithRename(routerStorgeRawPath, path.join(targetDir, 'src'), 'router');
+            const routerStorageRawPath = path.resolve(__dirname, '../resources/web/vue-router');
+            await copyDirWithRename(routerStorageRawPath, path.join(targetDir, 'src'), 'router');
 
             // 添加 vue-router 的 main.ts 配置
-            maintsOps.addImports([
+            mainTsOps.addImports([
                'import { router } from "@/router";',
                'import { setupRouterGuard } from "./router/guard";',
             ]);
-            maintsOps.addSetupCodes(['// 配置路由', 'app.use(router);']);
-            maintsOps.addSetupCodes(['// 配置路由守卫', 'setupRouterGuard(router);']);
+            mainTsOps.addSetupCodes(['// 配置路由', 'app.use(router);']);
+            mainTsOps.addSetupCodes(['// 配置路由守卫', 'setupRouterGuard(router);']);
             //src/views/index.vue
             const appContent = await readTextFileContent(path.join(targetDir, 'src/App.vue'));
             // 修复路径引用，使用 @ 别名
@@ -164,8 +164,8 @@ export async function WebVueToolsSettings(
             break;
          case 'vite-proxy':
             viteConfigOps.addProxy({
-               perfixName: '/api',
-               profixTarget: 'http://localhost:3000',
+               prefixName: '/api',
+               prefixTarget: 'http://localhost:3000',
                changeOrigin: true,
                rewrite: path => path.replace(/^\/api/, ''),
             });
@@ -191,7 +191,7 @@ export async function WebVueToolsSettings(
          case 'ant-design-vue':
             //配置ant-design-vue组件库
             tsConfigOps.appendTypes(['ant-design-vue/typings/global.d.ts']);
-            gitIgnoreOps.appendLines(['# auto compoents types', 'components.d.ts']);
+            gitIgnoreOps.appendLines(['# auto components types', 'components.d.ts']);
             packageJsonOps.addBothDependencies(getWebComponentVueRequireDep());
             viteConfigOps
                .addImport("import Components from 'unplugin-vue-components/vite';")
@@ -206,7 +206,7 @@ export async function WebVueToolsSettings(
    }
 
    //========================================== 保存文件 ======================================
-   await maintsOps.saveMainFile();
+   await mainTsOps.saveMainFile();
    await viteConfigOps.save();
    await packageJsonOps.save();
    await tsConfigOps.save();

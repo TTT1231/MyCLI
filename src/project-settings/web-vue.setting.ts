@@ -36,7 +36,7 @@ export function getWebPiniaDependency(): Record<string, string> {
 }
 
 //web请求相关依赖
-export function getWebReuqestRequireDep(): RequireDependencies {
+export function getWebRequestRequireDep(): RequireDependencies {
    return WEB_REQUEST;
 }
 //web组件库依赖

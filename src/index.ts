@@ -1,6 +1,5 @@
 // 导出核心功能，供其他项目使用
 export { newProject } from './commands/new';
-export { initProject } from './commands/init';
 
 // 导出类型定义
 export * from './types';
