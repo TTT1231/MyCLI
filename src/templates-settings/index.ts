@@ -13,7 +13,8 @@ export const TEMPLATES: Record<string, TemplateConfig> = {
    },
    node: {
       name: 'Node.js',
-      repository: 'github:microsoft/TypeScript-Node-Starter',
+      repository: 'templates/node',
+      isLocal: true,
    },
 };
 
@@ -35,11 +36,6 @@ export const TEMPLATE_TOOLS: Record<string, Array<{ value: string; label: string
       //TODO 占位，还未配置
    ],
    node: [
-      { value: 'eslint', label: 'ESLint - 代码检查工具' },
-      { value: 'prettier', label: 'Prettier - 代码格式化工具' },
-      { value: 'jest', label: 'Jest - 测试框架' },
-      { value: 'express', label: 'Express - Web框架' },
-      { value: 'mongoose', label: 'Mongoose - MongoDB ODM' },
-      { value: 'dotenv', label: 'Dotenv - 环境变量管理' },
+      //TODO 占位，还未配置
    ],
 };

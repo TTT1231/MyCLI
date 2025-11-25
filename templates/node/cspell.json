@@ -1,0 +1,24 @@
+{
+   "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+   "version": "0.2",
+   "language": "en,en-US",
+   // 复合词检查
+   "allowCompoundWords": true,
+   // 正确单词列表
+   "words": [],
+   // 从cspell的配置文件为当前目录，file patterns为匹配
+   "ignorePaths": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/*-dist/**",
+      "**/icons/**",
+      "pnpm-lock.yaml",
+      "**/*.log",
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      "**/__tests__/**",
+      "**/*.svg",
+      "**/*.png",
+      "**/*.ico",
+   ]
+}
