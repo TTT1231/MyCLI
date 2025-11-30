@@ -1,28 +1,28 @@
 {
    "extends": "./tsconfig.base.json",
    "compilerOptions": {
-      "noEmit": true,
-      "moduleDetection": "force",
-      "noUncheckedIndexedAccess": true,
-      "verbatimModuleSyntax": true,
+      "moduleResolution": "bundler",
       "useDefineForClassFields": true,
+      // 浏览器环境
+      "lib": ["ES2020", "DOM", "DOM.Iterable"],
+      "types": ["vite/client"],
+
+      // 路径别名
       "paths": {
          "@renderer/*": ["src/renderer/*"],
          "@shared/*": ["src/shared/*"],
-         "@resources/*": ["resources/*"],
-         "~~/*": ["*"]
+         "@resources/*": ["resources/*"]
       },
-      "lib": ["ES2020", "DOM", "DOM.Iterable"],
-      "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-      "types": ["vite/client"]
+
+      "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
    },
    "include": [
       "src/renderer/**/*.ts",
       "src/renderer/**/*.vue",
       "src/renderer/**/*.d.ts",
-      "vite.renderer.config.ts",
       "src/shared/**/*.ts",
       "src/shared/**/*.d.ts",
+      "vite.renderer.config.ts",
       "vite.common.config.ts"
    ],
    "exclude": ["src/main/**/*", "src/preload/**/*"]

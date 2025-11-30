@@ -7,31 +7,31 @@
 
       //模块和解析
       "module": "esnext",
-      "moduleResolution": "bundler",
       "baseUrl": ".",
       "resolveJsonModule": true,
+      "moduleDetection": "force",
+      "verbatimModuleSyntax": true,
 
-      //js 支持
+      // JS 支持
       "allowJs": true,
       "checkJs": true,
 
-      //emit
-      "sourceMap": true,
-      "outDir": "dist",
-
-      //限制
+      // 互操作性
+      "allowSyntheticDefaultImports": true,
       "forceConsistentCasingInFileNames": true,
-      "esModuleInterop": true,
+      "isolatedModules": true,
 
-      //类型检查
+      // 类型检查（仅检查，不输出）
+      "noEmit": true,
       "strict": true,
       "noFallthroughCasesInSwitch": true,
       "noImplicitAny": true,
       "noUnusedLocals": true,
       "noUnusedParameters": true,
       "noUncheckedSideEffectImports": true,
+      "noUncheckedIndexedAccess": true,
 
-      //一致性
+      // 跳过库检查
       "skipLibCheck": true
    },
    "exclude": ["node_modules", ".vite", "out"]
