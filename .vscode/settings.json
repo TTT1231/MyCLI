@@ -54,6 +54,7 @@
     "eslint.config.mjs": ".prettierignore, .prettierrc.json,.prettier,.editorconfig",
     "tsconfig.json": "tsconfig.*.json",
     "vite.config.{js,ts}": "vite.*.{js,ts}",
+    "vite.main.config.ts": "vite.*.ts",
     ".env": ".env.*",
     ".prettierrc.json":".prettierignore"
   },
