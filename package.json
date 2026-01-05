@@ -12,7 +12,7 @@
       "type-check": "tsc --noEmit",
       "format": "prettier --write .",
       "cspell": "cspell \"**/*.{ts,js,json,md}\"",
-      "unlink:global": "pnpm remove -g trw; if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq $null) { Remove-Item $env:LOCALAPPDATA\\pnpm\\trw* -ErrorAction SilentlyContinue }"
+      "unlink:g": "powershell -ExecutionPolicy ByPass -File scripts/unlink.ps1"
    },
    "files": [
       "dist",
