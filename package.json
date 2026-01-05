@@ -10,7 +10,8 @@
       "build": "tsup",
       "start": "node dist/cli.js",
       "type-check": "tsc --noEmit",
-      "format": "prettier --write ."
+      "format": "prettier --write .",
+      "unlink:global": "pnpm remove -g trw; if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq $null) { Remove-Item $env:LOCALAPPDATA\\pnpm\\trw* -ErrorAction SilentlyContinue }"
    },
    "files": [
       "dist",
