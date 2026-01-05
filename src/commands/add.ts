@@ -38,7 +38,7 @@ export async function addProjectSettings(subcommand?: string): Promise<void> {
 // show add help
 function showAddHelp(): void {
    console.log(chalk.bold('\n用法:'));
-   console.log(`  ${chalk.cyan('my-cli add')} ${chalk.yellow('<config-type>')}\n`);
+   console.log(`  ${chalk.cyan('trw add')} ${chalk.yellow('<config-type>')}\n`);
    console.log(chalk.bold('可用的配置类型:\n'));
    Object.entries(ADD_CONFIGS).forEach(([key, config]) => {
       console.log(`  ${chalk.green(key.padEnd(12))} ${chalk.gray(config.description)}`);

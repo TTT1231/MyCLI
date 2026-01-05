@@ -14,7 +14,7 @@ if (process.env.CI !== 'true') {
    notifier.notify({ isGlobal: true });
 }
 
-const cli = cac('my-cli');
+const cli = cac('trw');
 
 // 全局选项
 cli.help().version(pkg.version, '-v, -V, --version');
