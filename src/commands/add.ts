@@ -1,6 +1,6 @@
 import path from 'path';
 import { ensureDir, pathExists } from '../utils/file-ops';
-import { copy } from 'fs-extra';
+import { copy, remove } from 'fs-extra';
 import chalk from 'chalk';
 import { showError, promptOverwrite } from '../utils/prompt';
 import { type AddConfigType, ADD_CONFIGS } from '../project-settings/types';
@@ -57,14 +57,10 @@ function handleError(error: unknown): never {
 //add vscode
 async function addVscodeSettings(): Promise<void> {
    const rootDir = process.cwd();
-   // 使用相对于package.json的路径
-   const vscodeSettingsPathSrc = path.join(rootDir, 'resources', '.vscode');
+   // 源路径：CLI 工具的 resources/.vscode 目录（在 dist 目录下）
+   const vscodeSettingsPathSrc = path.join(__dirname, '..', 'resources', '.vscode');
+   // 目标路径：用户项目的 .vscode 目录
    const vscodeSettingsPathDest = path.join(rootDir, '.vscode');
-
-   // 检查源配置是否存在
-   if (!(await pathExists(vscodeSettingsPathSrc))) {
-      throw new Error(`配置源路径不存在: ${vscodeSettingsPathSrc}`);
-   }
 
    // 检查目标目录是否存在
    if (await pathExists(vscodeSettingsPathDest)) {
@@ -73,12 +69,12 @@ async function addVscodeSettings(): Promise<void> {
          console.log(chalk.yellow('操作已取消'));
          process.exit(0);
       }
+      // 用户确认覆盖，先删除现有的 .vscode 文件夹
+      await remove(vscodeSettingsPathDest);
    }
 
-   await ensureDir(vscodeSettingsPathDest); // 确保目标目录存在
-   await copy(vscodeSettingsPathSrc, vscodeSettingsPathDest, {
-      overwrite: true,
-   }).catch(error => {
+   // 复制 CLI 工具的 .vscode 文件夹到用户项目
+   await copy(vscodeSettingsPathSrc, vscodeSettingsPathDest).catch(error => {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`配置 VSCode 失败: ${message}`);
    });
