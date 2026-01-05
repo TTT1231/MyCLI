@@ -56,7 +56,7 @@
     "vite.config.{js,ts}": "vite.*.{js,ts}",
     "vite.main.config.ts": "vite.*.ts",
     ".env": ".env.*",
-    ".prettierrc.json":".prettierignore"
+    ".prettierrc.json":".prettierignore,cspell.json"
   },
   // =============================== 插件配置 ================================
 

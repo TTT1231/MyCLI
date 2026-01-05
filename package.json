@@ -11,6 +11,7 @@
       "start": "node dist/cli.js",
       "type-check": "tsc --noEmit",
       "format": "prettier --write .",
+      "cspell": "cspell \"**/*.{ts,js,json,md}\"",
       "unlink:global": "pnpm remove -g trw; if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq $null) { Remove-Item $env:LOCALAPPDATA\\pnpm\\trw* -ErrorAction SilentlyContinue }"
    },
    "files": [
@@ -23,7 +24,7 @@
       "scaffolding",
       "generator"
    ],
-   "author": "",
+   "author": "Turw",
    "license": "ISC",
    "packageManager": "pnpm@10.13.1",
    "dependencies": {
@@ -47,6 +48,7 @@
       "@types/node": "^24.9.2",
       "@types/semver": "^7.7.1",
       "@types/update-notifier": "^6.0.8",
+      "cspell": "^9.4.0",
       "prettier": "^3.6.2",
       "tsup": "^8.5.0",
       "typescript": "^5.9.3"

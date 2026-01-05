@@ -1,0 +1,42 @@
+{
+   "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+   "version": "0.2",
+   "language": "en,en-US",
+   // 复合词检查
+   "allowCompoundWords": true,
+   // 正确单词列表
+   "words": [
+      "defu",
+      "echarts",
+      "iconify",
+      "minh",
+      "minw",
+      "mockjs",
+      "nprogress",
+      "nuxt",
+      "pinia",
+      "prefixs",
+      "qrcode",
+      "vite",
+      "vitejs",
+      "vitepress",
+      "vueuse",
+      "Turw",
+      "mata",
+      "ENVREADME",
+      "unplugin",
+      "asar",
+      "Asar",
+      "utillity",
+      "envfile"
+   ],
+   // 从cspell的配置文件为当前目录，file patterns为匹配
+   "ignorePaths": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "pnpm-lock.yaml",
+      "**/*.svg",
+      "**/*.png",
+      "**/*.ico"
+   ]
+}
