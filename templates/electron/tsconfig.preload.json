@@ -18,6 +18,8 @@
    },
    "include": [
       "src/preload/**/*.ts",
-      "src/preload/**/*.d.ts"
+      "src/preload/**/*.d.ts",
+      "src/shared/**/*.ts",
+      "src/shared/**/*.d.ts"
    ]
 }
